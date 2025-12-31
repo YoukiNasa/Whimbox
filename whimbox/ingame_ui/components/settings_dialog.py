@@ -73,7 +73,7 @@ class SettingsDialog(QDialog):
         self.setModal(True)
         self.setWindowFlags(Qt.Dialog | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
-        self.setFixedSize(800, 800)
+        self.setFixedSize(600, 600)
         
         # 创建主容器（用于圆角背景）
         main_container = QWidget(self)
@@ -81,14 +81,14 @@ class SettingsDialog(QDialog):
         main_container.setStyleSheet("""
             #mainContainer {
                 background-color: #F5F5F5;
-                border-radius: 12px;
+                border-radius: 8px;
             }
         """)
         
         # 主布局
         main_layout = QVBoxLayout(main_container)
-        main_layout.setContentsMargins(20, 20, 20, 20)
-        main_layout.setSpacing(10)
+        main_layout.setContentsMargins(8, 8, 8, 8)
+        main_layout.setSpacing(8)
         
         # 标题
         title_label = QLabel("⚙️ 设置")
@@ -97,7 +97,7 @@ class SettingsDialog(QDialog):
                 font-size: 9pt;
                 font-weight: bold;
                 color: #2196F3;
-                padding: 5px 0;
+                padding: 4px 0;
             }
         """)
         main_layout.addWidget(title_label)
@@ -113,12 +113,12 @@ class SettingsDialog(QDialog):
             }
             QScrollBar:vertical {
                 background-color: #F5F5F5;
-                width: 8px;
-                border-radius: 4px;
+                width: 6px;
+                border-radius: 3px;
             }
             QScrollBar::handle:vertical {
                 background-color: #BDBDBD;
-                border-radius: 4px;
+                border-radius: 3px;
                 min-height: 20px;
             }
             QScrollBar::handle:vertical:hover {
@@ -129,8 +129,6 @@ class SettingsDialog(QDialog):
         # 配置容器
         config_container = QWidget()
         config_layout = QVBoxLayout(config_container)
-        # config_layout.setContentsMargins(15, 15, 15, 15)
-        # config_layout.setSpacing(10)
         
         # 为每个配置节创建分组
         for section_name, section_data in DEFAULT_CONFIG.items():
@@ -148,16 +146,16 @@ class SettingsDialog(QDialog):
         button_layout.setSpacing(10)
         
         self.save_button = QPushButton("保存")
-        self.save_button.setFixedHeight(40)
+        self.save_button.setFixedHeight(24)
+        self.save_button.setFixedWidth(80)
         self.save_button.clicked.connect(self.save_config)
         self.save_button.setStyleSheet("""
             QPushButton {
                 background-color: #4CAF50;
                 color: white;
                 border: none;
-                border-radius: 8px;
-                padding: 10px 20px;
-                font-size: 7pt;
+                border-radius: 6px;
+                font-size: 8pt;
                 font-weight: bold;
             }
             QPushButton:hover {
@@ -173,16 +171,16 @@ class SettingsDialog(QDialog):
         """)
         
         self.cancel_button = QPushButton("取消")
-        self.cancel_button.setFixedHeight(40)
+        self.cancel_button.setFixedHeight(24)
+        self.cancel_button.setFixedWidth(80)
         self.cancel_button.clicked.connect(self.reject)
         self.cancel_button.setStyleSheet("""
             QPushButton {
                 background-color: #f44336;
                 color: white;
                 border: none;
-                border-radius: 8px;
-                padding: 10px 20px;
-                font-size: 7pt;
+                border-radius: 6px;
+                font-size: 8pt;
                 font-weight: bold;
             }
             QPushButton:hover {
@@ -202,9 +200,6 @@ class SettingsDialog(QDialog):
         button_layout.addWidget(self.cancel_button)
         
         main_layout.addLayout(button_layout)
-        
-        # 设置主容器大小和位置
-        main_container.setFixedSize(800, 800)
         
         # 创建对话框布局
         dialog_layout = QVBoxLayout(self)
@@ -230,19 +225,19 @@ class SettingsDialog(QDialog):
         group_box = QGroupBox(cn_name)
         group_box.setStyleSheet("""
             QGroupBox {
-                font-size: 8pt;
+                font-size: 9pt;
                 font-weight: bold;
                 color: #424242;
-                border: 2px solid #E0E0E0;
-                border-radius: 8px;
-                margin-top: 10px;
-                padding-top: 10px;
+                border: 1px solid #E0E0E0;
+                border-radius: 6px;
+                margin-top: 6px;
+                padding-top: 6px;
                 background-color: white;
             }
             QGroupBox::title {
                 subcontrol-origin: margin;
                 subcontrol-position: top left;
-                padding: 0 5px;
+                padding: 0 4px;
                 color: #2196F3;
             }
         """)
@@ -250,8 +245,8 @@ class SettingsDialog(QDialog):
         # Keybinds 使用特殊的两列布局
         if section_name == "Keybinds":
             layout = QGridLayout()
-            layout.setSpacing(10)
-            layout.setContentsMargins(10, 10, 10, 10)
+            layout.setSpacing(8)
+            layout.setContentsMargins(8, 8, 8, 8)
             
             keys = list(section_data.keys())
             for idx, key in enumerate(keys):
@@ -275,8 +270,8 @@ class SettingsDialog(QDialog):
         """创建单个配置项的控件"""
         item_widget = QWidget()
         item_layout = QVBoxLayout(item_widget)
-        item_layout.setContentsMargins(5, 5, 5, 5)
-        item_layout.setSpacing(5)
+        item_layout.setContentsMargins(4, 4, 4, 4)
+        item_layout.setSpacing(4)
         
         # 标签和描述
         label_text = config_item['description']
@@ -302,11 +297,11 @@ class SettingsDialog(QDialog):
             input_widget.setStyleSheet("""
                 QCheckBox {
                     font-size: 8pt;
-                    spacing: 5px;
+                    spacing: 4px;
                 }
                 QCheckBox::indicator {
-                    width: 20px;
-                    height: 20px;
+                    width: 12px;
+                    height: 12px;
                 }
             """)
         # 判断是否是数字
@@ -320,7 +315,7 @@ class SettingsDialog(QDialog):
                 input_widget.setValidator(QDoubleValidator())
             input_widget.setStyleSheet("""
                 QLineEdit {
-                    padding: 5px;
+                    padding: 4px;
                     border: 1px solid #BDBDBD;
                     border-radius: 4px;
                     font-size: 8pt;
@@ -336,7 +331,7 @@ class SettingsDialog(QDialog):
             input_widget.setPlaceholderText("请输入值")
             input_widget.setStyleSheet("""
                 QLineEdit {
-                    padding: 5px;
+                    padding: 4px;
                     border: 1px solid #BDBDBD;
                     border-radius: 4px;
                     font-size: 8pt;
@@ -382,12 +377,12 @@ class SettingsDialog(QDialog):
                     background-color: white;
                     border: 1px solid #BDBDBD;
                     border-radius: 4px;
-                    padding: 5px;
+                    padding: 4px;
                     font-size: 8pt;
                 }
                 QListView::item {
-                    padding: 5px;
-                    border-radius: 2px;
+                    padding: 4px;
+                    border-radius: 1px;
                 }
                 QListView::item:hover {
                     background-color: #E3F2FD;

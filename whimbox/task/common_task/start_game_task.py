@@ -103,7 +103,7 @@ class StartGameTask(TaskTemplate):
                 else:
                     self.log_to_gui(f"请等待游戏分辨率恢复正常……")
                     if retry_time <= 0:
-                        self.task_stop(f"启动失败，当前游戏分辨率为:{width}x{height}，奇想盒只支持16:9与16:10的分辨率")
+                        self.task_stop(f"启动失败，当前游戏分辨率为:{width}x{height}，奇想盒只支持16:9或16:10的分辨率")
                         return
             else:
                 HANDLE_OBJ.refresh_handle()

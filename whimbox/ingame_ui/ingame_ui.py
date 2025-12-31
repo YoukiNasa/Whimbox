@@ -15,8 +15,13 @@ qt_dir = os.path.join(dirname, 'Qt5', 'plugins', 'platforms')
 os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = qt_dir
 
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import Qt
 from whimbox.ingame_ui.main_ui import IngameUI
 from whimbox.common.logger import logger
+
+QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
+QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough);
 
 # 全局应用和UI实例
 ingame_ui_app = QApplication(sys.argv)

@@ -65,12 +65,12 @@ class ChatView(QWidget):
             }
             QScrollBar:vertical {
                 background-color: #F5F5F5;
-                width: 8px;
-                border-radius: 4px;
+                width: 6px;
+                border-radius: 3px;
             }
             QScrollBar::handle:vertical {
                 background-color: #BDBDBD;
-                border-radius: 4px;
+                border-radius: 3px;
                 min-height: 20px;
             }
             QScrollBar::handle:vertical:hover {
@@ -87,7 +87,7 @@ class ChatView(QWidget):
         """)
         self.chat_layout = QVBoxLayout(self.chat_container)
         self.chat_layout.setContentsMargins(4, 4, 4, 4)
-        self.chat_layout.setSpacing(4)
+        self.chat_layout.setSpacing(2)
         self.chat_layout.addStretch()  # 添加stretch使消息从底部开始
         
         self.chat_scroll_area.setWidget(self.chat_container)
@@ -102,12 +102,12 @@ class ChatView(QWidget):
                 background-color: white;
                 color: #424242;
                 border: 1px solid #E0E0E0;
-                border-radius: 16px;
-                padding: 8px 16px;
+                border-radius: 8px;
+                padding: 4px 12px;
                 font-size: 8pt;
             }
             QLineEdit:focus {
-                border: 2px solid #2196F3;
+                border: 1px solid #2196F3;
                 background-color: #FAFAFA;
             }
         """)
@@ -119,8 +119,8 @@ class ChatView(QWidget):
                 background-color: #2196F3;
                 color: white;
                 border: none;
-                border-radius: 16px;
-                padding: 8px 16px;
+                border-radius: 12px;
+                padding: 6px 12px;
                 font-size: 8pt;
             }
             QPushButton:hover {

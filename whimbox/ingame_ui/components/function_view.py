@@ -81,13 +81,13 @@ class FunctionView(QWidget):
             }
             QScrollBar:vertical {
                 background-color: rgba(240, 240, 240, 150);
-                width: 10px;
-                border-radius: 5px;
+                width: 6px;
+                border-radius: 3px;
                 margin: 0px;
             }
             QScrollBar::handle:vertical {
                 background-color: #2196F3;
-                border-radius: 5px;
+                border-radius: 3px;
                 min-height: 30px;
             }
             QScrollBar::handle:vertical:hover {
@@ -103,7 +103,7 @@ class FunctionView(QWidget):
         
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(12)
+        layout.setSpacing(8)
         
         # 后台任务区域（固定在顶部，不滚动）
         background_container = self.create_background_task_section()
@@ -127,8 +127,8 @@ class FunctionView(QWidget):
         """)
         
         function_layout = QVBoxLayout(function_container)
-        function_layout.setContentsMargins(16, 16, 16, 16)
-        function_layout.setSpacing(12)
+        function_layout.setContentsMargins(8, 8, 8, 8)
+        function_layout.setSpacing(8)
         
         # 根据配置创建所有功能按钮
         for config in FUNCTION_BUTTONS:
@@ -146,17 +146,16 @@ class FunctionView(QWidget):
     def create_function_button(self, config: dict) -> QPushButton:
         """根据配置创建功能按钮"""
         button = QPushButton(config['label'])
-        button.setFixedHeight(50)
+        button.setFixedHeight(32)
         button.clicked.connect(lambda: self.on_function_button_clicked(config))
         button.setStyleSheet("""
             QPushButton {
                 background-color: #2196F3;
                 color: white;
                 border: none;
-                border-radius: 8px;
+                border-radius: 6px;
                 font-size: 8pt;
                 font-weight: bold;
-                padding: 12px 24px;
             }
             QPushButton:hover {
                 background-color: #1976D2;
@@ -260,7 +259,7 @@ class FunctionView(QWidget):
                 font-size: 8pt;
                 color: #000000;
                 border: none;
-                spacing: 6px;
+                spacing: 4px;
                 background-color: transparent;
             }
         """)

@@ -55,8 +55,8 @@ class KeybindInput(QWidget):
         self.input_field = QLabel()
         self.input_field.setAlignment(Qt.AlignCenter)
         self.input_field.setCursor(Qt.PointingHandCursor)
-        self.input_field.setFixedHeight(35)
-        self.input_field.setFixedWidth(120)
+        self.input_field.setFixedHeight(24)
+        self.input_field.setFixedWidth(100)
         self.update_display()
         self.update_input_style(False)
         
@@ -83,7 +83,7 @@ class KeybindInput(QWidget):
             # 捕获状态：高亮显示，动画效果
             self.input_field.setStyleSheet("""
                 QLabel {
-                    padding: 4px;
+                    padding: 3px;
                     border: 2px solid #2196F3;
                     border-radius: 6px;
                     font-size: 8pt;
@@ -96,7 +96,7 @@ class KeybindInput(QWidget):
             # 正常状态：显示按键值
             self.input_field.setStyleSheet("""
                 QLabel {
-                    padding: 4px;
+                    padding: 3px;
                     border: 1px solid #BDBDBD;
                     border-radius: 6px;
                     font-size: 8pt;

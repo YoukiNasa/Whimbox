@@ -17,7 +17,7 @@ class PathSelectionDialog(QDialog):
         self.setModal(True)
         self.setWindowFlags(Qt.Dialog | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
-        self.setFixedSize(800, 800)
+        self.setFixedSize(600, 600)
         
         # 搜索条件
         self.filter_target = None
@@ -41,8 +41,8 @@ class PathSelectionDialog(QDialog):
         
         # 主布局
         layout = QVBoxLayout(main_container)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(12)
+        layout.setContentsMargins(8, 8, 8, 8)
+        layout.setSpacing(8)
         
         # 标题
         title_label = QLabel("🗺️ 自动跑图路线选择")
@@ -51,15 +51,15 @@ class PathSelectionDialog(QDialog):
                 font-size: 9pt;
                 font-weight: bold;
                 color: #2196F3;
-                padding: 5px 0;
+                padding: 4px 0;
             }
         """)
         layout.addWidget(title_label)
         
         # 搜索过滤区域 - 第一行：三个筛选条件平均分布
         filter_row1 = QHBoxLayout()
-        filter_row1.setSpacing(12)
-        filter_row1.setContentsMargins(0, 8, 0, 4)
+        filter_row1.setSpacing(8)
+        filter_row1.setContentsMargins(0, 4, 0, 2)
         
         # 标签样式
         label_style = "color: #424242; font-size: 8pt; font-weight: bold;"
@@ -74,14 +74,14 @@ class PathSelectionDialog(QDialog):
         self.target_input.textChanged.connect(self.on_filter_changed)
         self.target_input.setStyleSheet("""
             QLineEdit {
-                padding: 8px;
+                padding: 4px;
                 border: 1px solid #BDBDBD;
                 border-radius: 4px;
                 font-size: 8pt;
                 background-color: white;
             }
             QLineEdit:focus {
-                border: 2px solid #2196F3;
+                border: 1px solid #2196F3;
             }
         """)
         target_container.addWidget(target_label)
@@ -98,14 +98,14 @@ class PathSelectionDialog(QDialog):
         self.type_combo.currentTextChanged.connect(self.on_filter_changed)
         self.type_combo.setStyleSheet("""
             QComboBox {
-                padding: 8px;
+                padding: 4px;
                 border: 1px solid #BDBDBD;
                 border-radius: 4px;
                 font-size: 8pt;
                 background-color: white;
             }
             QComboBox:focus {
-                border: 2px solid #2196F3;
+                border: 1px solid #2196F3;
             }
             QComboBox::drop-down {
                 border: none;
@@ -127,14 +127,14 @@ class PathSelectionDialog(QDialog):
         self.count_spinbox.valueChanged.connect(self.on_filter_changed)
         self.count_spinbox.setStyleSheet("""
             QSpinBox {
-                padding: 8px;
+                padding: 4px;
                 border: 1px solid #BDBDBD;
                 border-radius: 4px;
                 font-size: 8pt;
                 background-color: white;
             }
             QSpinBox:focus {
-                border: 2px solid #2196F3;
+                border: 1px solid #2196F3;
             }
         """)
         count_container.addWidget(count_label)
@@ -145,12 +145,11 @@ class PathSelectionDialog(QDialog):
         
         # 第二行：刷新和重置按钮
         filter_row2 = QHBoxLayout()
-        filter_row2.setSpacing(12)
-        filter_row2.setContentsMargins(0, 4, 0, 8)
+        filter_row2.setSpacing(8)
         filter_row2.addStretch()
         
         open_folder_button = QPushButton("📁 打开路线文件夹")
-        open_folder_button.setFixedSize(150, 35)
+        open_folder_button.setFixedSize(120, 24)
         open_folder_button.clicked.connect(self.open_path_folder)
         open_folder_button.setStyleSheet("""
             QPushButton {
@@ -171,7 +170,7 @@ class PathSelectionDialog(QDialog):
         filter_row2.addWidget(open_folder_button)
         
         refresh_button = QPushButton("🔄 刷新路线")
-        refresh_button.setFixedSize(120, 35)
+        refresh_button.setFixedSize(120, 24)
         refresh_button.clicked.connect(self.reload_paths)
         refresh_button.setStyleSheet("""
             QPushButton {
@@ -192,7 +191,7 @@ class PathSelectionDialog(QDialog):
         filter_row2.addWidget(refresh_button)
         
         reset_button = QPushButton("🗑️ 重置筛选")
-        reset_button.setFixedSize(120, 35)
+        reset_button.setFixedSize(120, 24)
         reset_button.clicked.connect(self.reset_filters)
         reset_button.setStyleSheet("""
             QPushButton {
@@ -238,23 +237,23 @@ class PathSelectionDialog(QDialog):
         header.setSectionResizeMode(3, QHeaderView.Fixed)
         header.setSectionResizeMode(4, QHeaderView.Fixed)
         
-        self.path_list.setColumnWidth(1, 100)  # 类型
-        self.path_list.setColumnWidth(2, 120)  # 目标
-        self.path_list.setColumnWidth(3, 80)   # 数量
-        self.path_list.setColumnWidth(4, 120)  # 区域
+        self.path_list.setColumnWidth(1, 80)  # 类型
+        self.path_list.setColumnWidth(2, 100)  # 目标
+        self.path_list.setColumnWidth(3, 60)   # 数量
+        self.path_list.setColumnWidth(4, 100)  # 区域
         
         # 表格样式
         self.path_list.setStyleSheet("""
             QTableWidget {
                 border: 2px solid #E0E0E0;
-                border-radius: 8px;
+                border-radius: 6px;
                 background-color: white;
                 font-size: 8pt;
                 gridline-color: #DEDEDE;
                 outline: none;
             }
             QTableWidget::item {
-                padding: 8px;
+                padding: 6px;
                 border: none;
                 outline: none;
             }
@@ -278,12 +277,12 @@ class PathSelectionDialog(QDialog):
             }
             QScrollBar:vertical {
                 background-color: #F5F5F5;
-                width: 8px;
-                border-radius: 4px;
+                width: 6px;
+                border-radius: 3px;
             }
             QScrollBar::handle:vertical {
                 background-color: #BDBDBD;
-                border-radius: 4px;
+                border-radius: 3px;
                 min-height: 20px;
             }
             QScrollBar::handle:vertical:hover {
@@ -302,16 +301,16 @@ class PathSelectionDialog(QDialog):
         button_layout.addStretch()
         
         self.start_button = QPushButton("🚀 开始跑图")
-        self.start_button.setFixedHeight(40)
+        self.start_button.setFixedHeight(24)
+        self.start_button.setFixedWidth(80)
         self.start_button.clicked.connect(self.on_start_clicked)
         self.start_button.setStyleSheet("""
             QPushButton {
                 background-color: #4CAF50;
                 color: white;
                 border: none;
-                border-radius: 8px;
-                padding: 10px 20px;
-                font-size: 7pt;
+                border-radius: 6px;
+                font-size: 8pt;
                 font-weight: bold;
             }
             QPushButton:hover {
@@ -328,7 +327,8 @@ class PathSelectionDialog(QDialog):
         self.start_button.setEnabled(False)
         
         self.delete_button = QPushButton("🗑️ 删除路线")
-        self.delete_button.setFixedHeight(40)
+        self.delete_button.setFixedHeight(24)
+        self.delete_button.setFixedWidth(80)
         self.delete_button.clicked.connect(self.on_delete_clicked)
         self.delete_button.setEnabled(False)
         self.delete_button.setStyleSheet("""
@@ -336,9 +336,8 @@ class PathSelectionDialog(QDialog):
                 background-color: #FF5722;
                 color: white;
                 border: none;
-                border-radius: 8px;
-                padding: 10px 20px;
-                font-size: 7pt;
+                border-radius: 6px;
+                font-size: 8pt;
                 font-weight: bold;
             }
             QPushButton:hover {
@@ -354,16 +353,16 @@ class PathSelectionDialog(QDialog):
         """)
         
         cancel_button = QPushButton("取消")
-        cancel_button.setFixedHeight(40)
+        cancel_button.setFixedHeight(24)
+        cancel_button.setFixedWidth(80)
         cancel_button.clicked.connect(self.reject)
         cancel_button.setStyleSheet("""
             QPushButton {
                 background-color: #f44336;
                 color: white;
                 border: none;
-                border-radius: 8px;
-                padding: 10px 20px;
-                font-size: 7pt;
+                border-radius: 6px;
+                font-size: 8pt;
                 font-weight: bold;
             }
             QPushButton:hover {
@@ -378,9 +377,6 @@ class PathSelectionDialog(QDialog):
         button_layout.addWidget(self.delete_button)
         button_layout.addWidget(cancel_button)
         layout.addLayout(button_layout)
-        
-        # 设置主容器大小和位置
-        main_container.setFixedSize(800, 800)
         
         # 创建对话框布局
         dialog_layout = QVBoxLayout(self)

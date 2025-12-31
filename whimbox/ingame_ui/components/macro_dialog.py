@@ -16,7 +16,7 @@ class MacroSelectionDialog(QDialog):
         self.setModal(True)
         self.setWindowFlags(Qt.Dialog | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
-        self.setFixedSize(600, 700)
+        self.setFixedSize(600, 600)
         
         # 搜索条件
         self.filter_name = None
@@ -38,8 +38,8 @@ class MacroSelectionDialog(QDialog):
         
         # 主布局
         layout = QVBoxLayout(main_container)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(12)
+        layout.setContentsMargins(8, 8, 8, 8)
+        layout.setSpacing(8)
         
         # 标题
         title_label = QLabel("🎬 宏选择")
@@ -48,15 +48,15 @@ class MacroSelectionDialog(QDialog):
                 font-size: 9pt;
                 font-weight: bold;
                 color: #2196F3;
-                padding: 5px 0;
+                padding: 4px 0;
             }
         """)
         layout.addWidget(title_label)
         
         # 搜索过滤区域 - 第一行：宏名称搜索框
         filter_row1 = QHBoxLayout()
-        filter_row1.setSpacing(12)
-        filter_row1.setContentsMargins(0, 8, 0, 4)
+        filter_row1.setSpacing(8)
+        filter_row1.setContentsMargins(0, 4, 0, 2)
         
         # 标签样式
         label_style = "color: #424242; font-size: 8pt; font-weight: bold;"
@@ -71,14 +71,14 @@ class MacroSelectionDialog(QDialog):
         self.name_input.textChanged.connect(self.on_filter_changed)
         self.name_input.setStyleSheet("""
             QLineEdit {
-                padding: 8px;
+                padding: px;
                 border: 1px solid #BDBDBD;
-                border-radius: 4px;
+                border-radius: 6px;
                 font-size: 8pt;
                 background-color: white;
             }
             QLineEdit:focus {
-                border: 2px solid #2196F3;
+                border: 1px solid #2196F3;
             }
         """)
         name_container.addWidget(name_label)
@@ -89,12 +89,11 @@ class MacroSelectionDialog(QDialog):
         
         # 第二行：刷新和重置按钮
         filter_row2 = QHBoxLayout()
-        filter_row2.setSpacing(12)
-        filter_row2.setContentsMargins(0, 4, 0, 8)
+        filter_row2.setSpacing(8)
         filter_row2.addStretch()
         
         open_folder_button = QPushButton("📁 打开宏文件夹")
-        open_folder_button.setFixedSize(140, 35)
+        open_folder_button.setFixedSize(120, 24)
         open_folder_button.clicked.connect(self.open_macro_folder)
         open_folder_button.setStyleSheet("""
             QPushButton {
@@ -115,7 +114,7 @@ class MacroSelectionDialog(QDialog):
         filter_row2.addWidget(open_folder_button)
         
         refresh_button = QPushButton("🔄 刷新宏")
-        refresh_button.setFixedSize(110, 35)
+        refresh_button.setFixedSize(120, 24)
         refresh_button.clicked.connect(self.reload_macros)
         refresh_button.setStyleSheet("""
             QPushButton {
@@ -136,7 +135,7 @@ class MacroSelectionDialog(QDialog):
         filter_row2.addWidget(refresh_button)
         
         reset_button = QPushButton("🗑️ 重置筛选")
-        reset_button.setFixedSize(120, 35)
+        reset_button.setFixedSize(120, 24)
         reset_button.clicked.connect(self.reset_filters)
         reset_button.setStyleSheet("""
             QPushButton {
@@ -180,14 +179,14 @@ class MacroSelectionDialog(QDialog):
         self.macro_list.setStyleSheet("""
             QTableWidget {
                 border: 2px solid #E0E0E0;
-                border-radius: 8px;
+                border-radius: 6px;
                 background-color: white;
                 font-size: 8pt;
                 gridline-color: #DEDEDE;
                 outline: none;
             }
             QTableWidget::item {
-                padding: 8px;
+                padding: 6px;
                 border: none;
                 outline: none;
             }
@@ -211,12 +210,12 @@ class MacroSelectionDialog(QDialog):
             }
             QScrollBar:vertical {
                 background-color: #F5F5F5;
-                width: 8px;
-                border-radius: 4px;
+                width: 6px;
+                border-radius: 3px;
             }
             QScrollBar::handle:vertical {
                 background-color: #BDBDBD;
-                border-radius: 4px;
+                border-radius: 3px;
                 min-height: 20px;
             }
             QScrollBar::handle:vertical:hover {
@@ -235,16 +234,16 @@ class MacroSelectionDialog(QDialog):
         button_layout.addStretch()
         
         self.start_button = QPushButton("🚀 运行宏")
-        self.start_button.setFixedHeight(40)
+        self.start_button.setFixedHeight(24)
+        self.start_button.setFixedWidth(80)
         self.start_button.clicked.connect(self.on_start_clicked)
         self.start_button.setStyleSheet("""
             QPushButton {
                 background-color: #4CAF50;
                 color: white;
                 border: none;
-                border-radius: 8px;
-                padding: 10px 20px;
-                font-size: 7pt;
+                border-radius: 6px;
+                font-size: 8pt;
                 font-weight: bold;
             }
             QPushButton:hover {
@@ -261,7 +260,8 @@ class MacroSelectionDialog(QDialog):
         self.start_button.setEnabled(False)
         
         self.delete_button = QPushButton("🗑️ 删除宏")
-        self.delete_button.setFixedHeight(40)
+        self.delete_button.setFixedHeight(24)
+        self.delete_button.setFixedWidth(80)
         self.delete_button.clicked.connect(self.on_delete_clicked)
         self.delete_button.setEnabled(False)
         self.delete_button.setStyleSheet("""
@@ -269,9 +269,8 @@ class MacroSelectionDialog(QDialog):
                 background-color: #FF5722;
                 color: white;
                 border: none;
-                border-radius: 8px;
-                padding: 10px 20px;
-                font-size: 7pt;
+                border-radius: 6px;
+                font-size: 8pt;
                 font-weight: bold;
             }
             QPushButton:hover {
@@ -287,16 +286,16 @@ class MacroSelectionDialog(QDialog):
         """)
         
         cancel_button = QPushButton("取消")
-        cancel_button.setFixedHeight(40)
+        cancel_button.setFixedHeight(24)
+        cancel_button.setFixedWidth(80)
         cancel_button.clicked.connect(self.reject)
         cancel_button.setStyleSheet("""
             QPushButton {
                 background-color: #f44336;
                 color: white;
                 border: none;
-                border-radius: 8px;
-                padding: 10px 20px;
-                font-size: 7pt;
+                border-radius: 6px;
+                font-size: 8pt;
                 font-weight: bold;
             }
             QPushButton:hover {
@@ -311,9 +310,6 @@ class MacroSelectionDialog(QDialog):
         button_layout.addWidget(self.delete_button)
         button_layout.addWidget(cancel_button)
         layout.addLayout(button_layout)
-        
-        # 设置主容器大小和位置
-        main_container.setFixedSize(600, 700)
         
         # 创建对话框布局
         dialog_layout = QVBoxLayout(self)

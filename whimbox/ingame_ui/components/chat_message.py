@@ -58,7 +58,7 @@ class ChatMessageWidget(QWidget):
         
         # 头像
         avatar_label = QLabel(self.message.avatar)
-        avatar_label.setFixedSize(28, 28)
+        avatar_label.setFixedSize(20, 20)
         avatar_label.setAlignment(Qt.AlignCenter)
         
         # 浅色主题的头像样式
@@ -76,7 +76,7 @@ class ChatMessageWidget(QWidget):
         avatar_label.setStyleSheet(f"""
             QLabel {{
                 background-color: {avatar_bg};
-                border-radius: 14px;
+                border-radius: 10px;
                 font-size: 8pt;
                 border: 1px solid #E0E0E0;
             }}
@@ -121,9 +121,9 @@ class ChatMessageWidget(QWidget):
             QLabel {{
                 color: {text_color};
                 font-size: 8pt;
-                padding: 4px 8px;
+                padding: 4px 4px;
                 background-color: {msg_bg};
-                border-radius: 8px;
+                border-radius: 6px;
                 border: 1px solid #E0E0E0;
             }}
         """)

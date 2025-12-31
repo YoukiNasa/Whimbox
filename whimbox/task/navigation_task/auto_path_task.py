@@ -340,6 +340,6 @@ class AutoPathTask(TaskTemplate):
 
 
 if __name__ == "__main__":
-    task = AutoPathTask(path_name="朝夕心愿_捕虫")
+    task = AutoPathTask(path_name="古木荫地打怪路线")
     task_result = task.task_run()
     print(task_result.to_dict())
