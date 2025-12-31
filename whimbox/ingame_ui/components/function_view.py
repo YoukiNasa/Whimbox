@@ -15,7 +15,7 @@ FUNCTION_BUTTONS = [
         'start_message': '开始一条龙，按 / 结束任务\n',
     },
     {
-        'label': '自动跑图',
+        'label': '跑图路线',
         'task_name': 'load_path',
         'needs_dialog': True,  # 需要弹出对话框
         'dialog_type': 'path_selection',
@@ -27,7 +27,7 @@ FUNCTION_BUTTONS = [
         'start_message': '开始录制路线，按 / 停止录制\n',
     },
     {
-        'label': '运行宏',
+        'label': '宏脚本',
         'task_name': 'run_macro',
         'needs_dialog': True,  # 需要弹出对话框
         'dialog_type': 'macro_selection',
@@ -131,10 +131,33 @@ class FunctionView(QWidget):
         function_layout.setSpacing(8)
         
         # 根据配置创建所有功能按钮
-        for config in FUNCTION_BUTTONS:
+        # 第一个按钮独占一行
+        button = self.create_function_button(FUNCTION_BUTTONS[0])
+        self.buttons.append(button)
+        function_layout.addWidget(button)
+        
+        # "自动跑图"和"录制路线"放在同一行
+        row1_layout = QHBoxLayout()
+        row1_layout.setSpacing(8)
+        for config in FUNCTION_BUTTONS[1:3]:  # 索引 1, 2
             button = self.create_function_button(config)
             self.buttons.append(button)
-            function_layout.addWidget(button)
+            row1_layout.addWidget(button)
+        function_layout.addLayout(row1_layout)
+        
+        # "运行宏"和"录制宏"放在同一行
+        row2_layout = QHBoxLayout()
+        row2_layout.setSpacing(8)
+        for config in FUNCTION_BUTTONS[3:5]:  # 索引 3, 4
+            button = self.create_function_button(config)
+            self.buttons.append(button)
+            row2_layout.addWidget(button)
+        function_layout.addLayout(row2_layout)
+        
+        # 最后一个按钮独占一行
+        button = self.create_function_button(FUNCTION_BUTTONS[5])
+        self.buttons.append(button)
+        function_layout.addWidget(button)
         
         # 添加弹性空间
         function_layout.addStretch()
