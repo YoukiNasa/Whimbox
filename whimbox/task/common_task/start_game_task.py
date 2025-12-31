@@ -122,14 +122,14 @@ class StartGameTask(TaskTemplate):
             time.sleep(1)
             text_box_dict = itt.ocr_and_detect_posi(AreaLoginOCR)
             logger.info(f"登录界面文字: {text_box_dict.keys()}")
-            if "点击进入游戏" in text_box_dict:
+            if "确认" in text_box_dict and "退出游戏" not in text_box_dict and "账号登出" not in text_box_dict:
+                self.log_to_gui("有确认按钮我直接点！")
+                AreaLoginOCR.click(target_box=text_box_dict["确认"])
+                time.sleep(5)
+                return "step2"
+            elif "点击进入游戏" in text_box_dict:
                 AreaLoginOCR.click(target_box=text_box_dict["点击进入游戏"])
                 break
-            if "确认" in text_box_dict and "退出游戏" not in text_box_dict and "账号登出" not in text_box_dict:
-                self.log_to_gui("发现新版本，开始更新")
-                AreaLoginOCR.click(target_box=text_box_dict["确认"])
-                time.sleep(10)
-                return "step2"
             else:
                 itt.key_press('esc')
         # 不停点击，直到进入loading界面
