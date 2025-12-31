@@ -208,11 +208,11 @@ class XinghaiTask(TaskTemplate):
         if not itt.get_img_existence(ButtonXhsgRewarded):
             ButtonXhsgRewarded.click()
             if skip_get_award():
-                self.update_task_result(message="成功领取星海拾光奖励", data=self.todo_list)
+                self.update_task_result(message="成功领取星海拾光奖励")
             else:
-                raise Exception("领取星海拾光奖励失败")
+                self.update_task_result(status=STATE_TYPE_FAILED, message="星海日常未完成")
         else:
-            self.update_task_result(message="星海拾光奖励已被领取过，无需再次领取", data=self.todo_list)
+            self.update_task_result(message="星海拾光奖励已被领取过，无需再次领取")
 
     @register_step("退出星海拾光")
     def step6(self):
@@ -220,5 +220,4 @@ class XinghaiTask(TaskTemplate):
 
 if __name__ == "__main__":
     xinghai_task = XinghaiTask()
-    # xinghai_task.task_run()
-    xinghai_task.step0()
+    xinghai_task.task_run()
