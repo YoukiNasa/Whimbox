@@ -171,4 +171,4 @@ def optimize_path(path_point_list):
 
 if __name__ == "__main__":
     task = RecordPathTask()
-    task.task_run()
+    print(task.task_run())

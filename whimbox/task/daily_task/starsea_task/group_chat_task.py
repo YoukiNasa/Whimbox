@@ -1,7 +1,6 @@
 from whimbox.common.utils.ui_utils import wait_until_appear
 from whimbox.task.task_template import *
 from whimbox.interaction.interaction_core import itt
-from whimbox.task.navigation_task.auto_path_task import AutoPathTask
 from whimbox.common.keybind import keybind
 from whimbox.ui.ui import ui_control
 from whimbox.ui.ui_assets import *

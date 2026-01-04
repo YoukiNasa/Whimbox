@@ -24,6 +24,12 @@ xhsg_task_info_list = [
         "task_name": XHSG_TASK_PLACE_ITEM
     },
     {
+        "key_words": ["留声机"],
+        "score": 100,
+        "priority": 5,
+        "task_name": XHSG_TASK_CHANGE_MUSIC
+    },
+    {
         "key_words": ["聚会频道"],
         "score": 100,
         "priority": 5,
@@ -199,6 +205,7 @@ class XinghaiTask(TaskTemplate):
             XHSG_TASK_GROUP_CHAT: AutoPathTask(path_name="星海拾光_聚会聊天"),
             XHSG_TASK_BUBBLE_MAKE: AutoPathTask(path_name="星海拾光_制造泡泡"),
             XHSG_TASK_PLACE_ITEM: AutoPathTask(path_name="星海拾光_放置摆饰"),
+            XHSG_TASK_CHANGE_MUSIC: AutoPathTask(path_name="星海拾光_更改音乐"),
         }
         for task_name in self.todo_list:
             if self.need_stop():
