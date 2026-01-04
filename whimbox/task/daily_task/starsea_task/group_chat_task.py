@@ -10,19 +10,9 @@ from whimbox.ui.page_assets import *
 class GroupChatTask(TaskTemplate):
     def __init__(self):
         super().__init__("group_chat_task")
-
-    @register_step("前往星海沙发")
-    def step1(self):
-        task = AutoPathTask(path_name="星海拾光_聚会聊天")
-        task_result = task.task_run()
-        if task_result.status == STATE_TYPE_SUCCESS:
-            return
-        else:
-            self.update_task_result(status=STATE_TYPE_STOP, message=task_result.message)
-            return STEP_NAME_FINISH
     
     @register_step("进入群聊")
-    def step2(self):
+    def step1(self):
         if not wait_until_appear(IconSetdownFeature, area=AreaPickup):
             raise Exception("未找到坐下按钮")
         itt.key_press(keybind.KEYBIND_INTERACTION)
@@ -40,12 +30,13 @@ class GroupChatTask(TaskTemplate):
             return STEP_NAME_FINISH
     
     @register_step("开始聊天")
-    def step3(self):
+    def step2(self):
         itt.key_press('1')
         time.sleep(0.5)
         itt.key_press('enter')
         time.sleep(0.5)
         ui_control.goto_page(page_main)
+        itt.key_press(keybind.KEYBIND_INTERACTION)
     
 if __name__ == "__main__":
     task = GroupChatTask()

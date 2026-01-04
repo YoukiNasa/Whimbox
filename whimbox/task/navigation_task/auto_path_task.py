@@ -249,6 +249,10 @@ class AutoPathTask(TaskTemplate):
                     from whimbox.task.daily_task.starsea_task.place_item_task import PlaceItemTask
                     place_item_task = PlaceItemTask()
                     place_item_task.task_run()
+                elif self.target_point.action == ACTION_GROUP_CHAT:
+                    from whimbox.task.daily_task.starsea_task.group_chat_task import GroupChatTask
+                    group_chat_task = GroupChatTask()
+                    group_chat_task.task_run()
 
             if self.curr_target_point_id >= len(self.path_points) - 1:
                 # 走到终点了
@@ -344,6 +348,6 @@ class AutoPathTask(TaskTemplate):
 
 
 if __name__ == "__main__":
-    task = AutoPathTask(path_name="星海拾光_放置摆饰")
+    task = AutoPathTask(path_name="星海拾光_聚会聊天")
     task_result = task.task_run()
     print(task_result.to_dict())

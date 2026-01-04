@@ -196,7 +196,7 @@ class XinghaiTask(TaskTemplate):
     def step4(self):
         task_dict = {
             XHSG_TASK_BOOKLOOK_LIKE: LookbookLikeTask(),
-            XHSG_TASK_GROUP_CHAT: GroupChatTask(),
+            XHSG_TASK_GROUP_CHAT: AutoPathTask(path_name="星海拾光_聚会聊天"),
             XHSG_TASK_BUBBLE_MAKE: AutoPathTask(path_name="星海拾光_制造泡泡"),
             XHSG_TASK_PLACE_ITEM: AutoPathTask(path_name="星海拾光_放置摆饰"),
         }
