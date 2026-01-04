@@ -141,6 +141,7 @@ AreaXhsgBooklookWaterfall = Area(anchor=ANCHOR_TOP_CENTER, expand=True)
 IconXhsgBooklookLikeButton = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.90, hsv_limit=([15, 40, 195], [25, 110, 230]))
 IconXhsgGroupChatFeature = ImgIcon(print_log=LOG_WHEN_TRUE, anchor=ANCHOR_TOP_LEFT)
 TextChangeMusic = Text("更改音乐", cap_area = AreaPickup)
+ButtonXhsgBottleClose = Button(print_log=LOG_WHEN_TRUE, anchor=ANCHOR_CENTER)
 
 # 换装界面
 ButtonWardrobeDressDIY = Button(print_log=LOG_WHEN_TRUE, anchor=ANCHOR_RIGHT_CENTER)

@@ -240,11 +240,15 @@ class AutoPathTask(TaskTemplate):
                         minigame_task = MinigameTask(macro_name)
                         minigame_task.task_run()
                 elif self.target_point.action == ACTION_MACRO:
-                    macro_name = self.target_point.action_params
-                    if macro_name is not None:
-                        from whimbox.task.macro_task.run_macro_task import RunMacroTask
-                        macro_task = RunMacroTask(macro_name)
-                        macro_task.task_run()
+                    if not self.path_info.test_mode:
+                        macro_name = self.target_point.action_params
+                        if macro_name is not None:
+                            from whimbox.task.macro_task.run_macro_task import RunMacroTask
+                            macro_task = RunMacroTask(macro_name)
+                            macro_task.task_run()
+                    else:
+                        self.log_to_gui("测试跑图路线中，不进行宏操作")
+                        time.sleep(2)
                 elif self.target_point.action == ACTION_PLACE_ITEM:
                     from whimbox.task.daily_task.starsea_task.place_item_task import PlaceItemTask
                     place_item_task = PlaceItemTask()
@@ -257,6 +261,11 @@ class AutoPathTask(TaskTemplate):
                     from whimbox.task.daily_task.starsea_task.change_music_task import ChangeMusicTask
                     change_music_task = ChangeMusicTask()
                     change_music_task.task_run()
+                elif self.target_point.action == ACTION_PICKUP_BOTTLE:
+                    from whimbox.task.daily_task.starsea_task.pickup_bottle_task import PickupBottleTask
+                    pickup_bottle_task = PickupBottleTask()
+                    task_result = pickup_bottle_task.task_run()
+                    self.merge_material_count_dict(task_result.data)
 
             if self.curr_target_point_id >= len(self.path_points) - 1:
                 # 走到终点了
@@ -352,6 +361,6 @@ class AutoPathTask(TaskTemplate):
 
 
 if __name__ == "__main__":
-    task = AutoPathTask(path_name="星海拾光_更改音乐")
+    task = AutoPathTask(path_name="星海拾光_漂流瓶", excepted_num=1)
     task_result = task.task_run()
     print(task_result.to_dict())
