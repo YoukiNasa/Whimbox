@@ -164,16 +164,17 @@ class FishingTask(TaskTemplate):
             elif res == FishingResult.WRONG_POSITION:
                 break
         
-        if len(self.material_count_dict) == 0:
-            self.update_task_result(message="未钓到鱼")
-            self.log_to_gui("未钓到鱼")
-            return
-        else:
-            res = []
-            for fish_name, fish_weight in self.material_count_dict.items():
-                res.append(f"{fish_name}x{fish_weight}")
-            res_str = ", ".join(res)
-            self.update_task_result(message=f"获得{res_str}", data=self.material_count_dict)
+        if not self.need_stop():
+            if len(self.material_count_dict) == 0:
+                self.update_task_result(message="未钓到鱼")
+                self.log_to_gui("未钓到鱼")
+                return
+            else:
+                res = []
+                for fish_name, fish_weight in self.material_count_dict.items():
+                    res.append(f"{fish_name}x{fish_weight}")
+                res_str = ", ".join(res)
+                self.update_task_result(message=f"获得{res_str}", data=self.material_count_dict)
 
     def switch_fishing(self):
         if self.fishing_type == FISHING_TYPE_MIRALAND:

@@ -8,7 +8,7 @@ from whimbox.action.skip_dialog import SkipDialogTask
 from whimbox.common.logger import logger
 from whimbox.common.cvars import has_foreground_task
 from whimbox.common.utils.img_utils import crop
-from whimbox.task.task_template import STATE_TYPE_SUCCESS
+from whimbox.task.task_template import STATE_TYPE_SUCCESS, STATE_TYPE_STOP
 from whimbox.common.cvars import current_stop_flag
 from whimbox.common.keybind import keybind
 from whimbox.common.handle_lib import HANDLE_OBJ
@@ -318,6 +318,9 @@ class BackgroundTask:
             current_stop_flag.set(None)
             if fishing_task.task_result.status == STATE_TYPE_SUCCESS:
                 self.log_to_gui(f"自动钓鱼完成: {fishing_task.task_result.message}", type="finalize_ai_message")
+            elif fishing_task.task_result.status == STATE_TYPE_STOP:
+                self.log_to_gui(f"手动停止钓鱼", type="finalize_ai_message")
+                time.sleep(5) # 等待5秒，避免又检测到钓鱼界面，又开始自动钓鱼
             else:
                 self.log_to_gui(f"自动钓鱼失败: {fishing_task.task_result.message}", type="finalize_ai_message")
         except Exception as e:
