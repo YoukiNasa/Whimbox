@@ -23,6 +23,13 @@ class PlaceItemTask(TaskTemplate):
     @register_step("放置摆饰")
     def step2(self):
         itt.key_press(keybind.KEYBIND_ITEM)
+
+        # 等待进入摆放界面，第一次掏出摆饰，可能会卡住
+        while not self.need_stop():
+            time.sleep(1)
+            if not itt.get_img_existence(IconPageMainFeature):
+                break
+
         retry_time = 20
         while not self.need_stop() and retry_time > 0:
             itt.left_click()
