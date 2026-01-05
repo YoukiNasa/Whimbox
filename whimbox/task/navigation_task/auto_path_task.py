@@ -1,5 +1,5 @@
 """自动跑图"""
-from whimbox.task.task_template import TaskTemplate, register_step, STATE_TYPE_STOP
+from whimbox.task.task_template import *
 from whimbox.interaction.interaction_core import itt
 import time, copy
 from whimbox.common.path_lib import *
@@ -266,6 +266,13 @@ class AutoPathTask(TaskTemplate):
                     pickup_bottle_task = PickupBottleTask()
                     task_result = pickup_bottle_task.task_run()
                     self.merge_material_count_dict(task_result.data)
+                elif self.target_point.action == ACTION_DELIVERY_BOTTLE:
+                    from whimbox.task.daily_task.starsea_task.delivery_bottle_task import DeliveryBottleTask
+                    delivery_bottle_task = DeliveryBottleTask()
+                    result = delivery_bottle_task.task_run()
+                    if result.status == STATE_TYPE_ERROR:
+                        raise Exception(result.message)
+
 
             if self.curr_target_point_id >= len(self.path_points) - 1:
                 # 走到终点了
@@ -361,6 +368,6 @@ class AutoPathTask(TaskTemplate):
 
 
 if __name__ == "__main__":
-    task = AutoPathTask(path_name="星海拾光_漂流瓶", excepted_num=1)
+    task = AutoPathTask(path_name="星海拾光_投递漂流瓶")
     task_result = task.task_run()
     print(task_result.to_dict())

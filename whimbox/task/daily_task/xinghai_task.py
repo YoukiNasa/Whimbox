@@ -18,7 +18,7 @@ from whimbox.task.navigation_task.auto_path_task import AutoPathTask
 
 xhsg_task_info_list = [
     {
-        "key_words": ["拍下", "照片"],
+        "key_words": ["拍下", "张照"], # ocr有概率识别不出“照片”两个字
         "score": 200,
         "priority": 5,
         "task_name": XHSG_TASK_TAKE_PHOTO
@@ -63,13 +63,31 @@ xhsg_task_info_list = [
         "key_words": ["星愿碎片", "投递"],
         "score": 300,
         "priority": 0,
-        "task_name": XHSG_TASK_JAR_PICKUP
+        "task_name": XHSG_TASK_FRAG_PICKUP
     },
     {
         "key_words": ["星愿碎片", "照片"],
         "score": 200,
         "priority": 0,
-        "task_name": XHSG_TASK_JAR_PHOTO
+        "task_name": XHSG_TASK_FRAG_PHOTO
+    },
+        {
+        "key_words": ["漂流瓶", "查看"],
+        "score": 200,
+        "priority": 4,
+        "task_name": XHSG_TASK_BOTTLE_PICKUP
+    },
+    {
+        "key_words": ["投递", "信笺"],
+        "score": 200,
+        "priority": 3,
+        "task_name": XHSG_TASK_BOTTLE_DELIVERY
+    },
+    {
+        "key_words": ["星愿瓶", "合影"],
+        "score": 200,
+        "priority": 0,
+        "task_name": XHSG_TASK_BOTTLE_PHOTO
     },
     {
         "key_words": ["10个星光结晶"],
@@ -88,12 +106,6 @@ xhsg_task_info_list = [
         "score": 200,
         "priority": 0,
         "task_name": XHSG_TASK_PLANE_PHOTO
-    },
-    {
-        "key_words": ["漂流瓶", "查看"],
-        "score": 200,
-        "priority": 4,
-        "task_name": XHSG_TASK_BOTTLE_PICKUP
     },
     {
         "key_words": ["制造", "泡泡"],
@@ -212,7 +224,8 @@ class XinghaiTask(TaskTemplate):
             XHSG_TASK_BUBBLE_MAKE: AutoPathTask(path_name="星海拾光_制造泡泡"),
             XHSG_TASK_PLACE_ITEM: AutoPathTask(path_name="星海拾光_放置摆饰"),
             XHSG_TASK_CHANGE_MUSIC: AutoPathTask(path_name="星海拾光_更改音乐"),
-            XHSG_TASK_BOTTLE_PICKUP: AutoPathTask(path_name="星海拾光_漂流瓶", excepted_num=1),
+            XHSG_TASK_BOTTLE_PICKUP: AutoPathTask(path_name="星海拾光_拾取漂流瓶", excepted_num=1),
+            XHSG_TASK_BOTTLE_DELIVERY: AutoPathTask(path_name="星海拾光_投递漂流瓶"),
             XHSG_TASK_TAKE_PHOTO: DailyPhotoTask(),
         }
         for task_name in self.todo_list:
@@ -225,6 +238,7 @@ class XinghaiTask(TaskTemplate):
     @register_step("领取星海拾光奖励")
     def step5(self):
         ui_control.goto_page(page_xhsg)
+        itt.delay(1, comment="等待页面稳定")
         if not itt.get_img_existence(ButtonXhsgRewarded):
             ButtonXhsgRewarded.click()
             if skip_get_award():
@@ -240,4 +254,4 @@ class XinghaiTask(TaskTemplate):
 
 if __name__ == "__main__":
     xinghai_task = XinghaiTask()
-    xinghai_task.task_run()
+    print(xinghai_task.task_run())

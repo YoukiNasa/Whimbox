@@ -44,6 +44,7 @@ AreaBigMapMaterialSelect = Area(anchor=ANCHOR_CENTER)
 AreaBigMapMaterialTrackConfirm = Area(anchor=ANCHOR_CENTER)
 
 # 大世界采集、跳跃、移动、跳过等相关的UI
+AreaDialog = Area(anchor=ANCHOR_CENTER, expand=True)
 AreaPickup = Area(anchor=ANCHOR_CENTER, expand=True)
 TextPickUp = Text("拾取", cap_area = AreaPickup)
 IconPickupFeature = ImgIcon(print_log=LOG_NONE, threshold=0.75, gray_limit=(210, 255))
@@ -134,7 +135,7 @@ IconZxxyTaskFinished = ImgIcon(print_log=LOG_WHEN_TRUE, anchor=ANCHOR_BOTTOM_CEN
 ButtonXhsgEntrance = Button(print_log=LOG_WHEN_TRUE, anchor=ANCHOR_CENTER)
 IconXhsgFeature = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.90, hsv_limit=([10, 40, 150], [35, 150, 255]), anchor=ANCHOR_BOTTOM_CENTER)
 AreaXhsgScore = Area(anchor=ANCHOR_RIGHT_CENTER)
-ButtonXhsgRewarded = Button(print_log=LOG_WHEN_TRUE, anchor=ANCHOR_RIGHT_CENTER)
+ButtonXhsgRewarded = Button(print_log=LOG_ALL, anchor=ANCHOR_RIGHT_CENTER)
 AreaXhsgTaskText = Area(anchor=ANCHOR_BOTTOM_CENTER)
 IconXhsgTaskFinished = ImgIcon(print_log=LOG_WHEN_TRUE, anchor=ANCHOR_BOTTOM_CENTER)
 AreaXhsgBooklookWaterfall = Area(anchor=ANCHOR_TOP_CENTER, expand=True)
@@ -142,6 +143,7 @@ IconXhsgBooklookLikeButton = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.90, hs
 IconXhsgGroupChatFeature = ImgIcon(print_log=LOG_WHEN_TRUE, anchor=ANCHOR_TOP_LEFT)
 TextChangeMusic = Text("更改音乐", cap_area = AreaPickup)
 ButtonXhsgBottleClose = Button(print_log=LOG_WHEN_TRUE, anchor=ANCHOR_CENTER)
+TextDeliveryBottle = Text("投递", cap_area = AreaPickup)
 
 # 换装界面
 ButtonWardrobeDressDIY = Button(print_log=LOG_WHEN_TRUE, anchor=ANCHOR_RIGHT_CENTER)
