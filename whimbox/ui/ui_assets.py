@@ -159,6 +159,8 @@ IconAbilityInsect = ImgIcon()      # 捕虫
 IconAbilityFish = ImgIcon()     # 钓鱼
 IconAbilityFly = ImgIcon()      # 滑翔
 IconAbilitySmall = ImgIcon()    # 变小
+IconAbilityBig = ImgIcon()    # 变大
+IconAbilityStick = ImgIcon()    # 黏黏爪
 AreaAbilityChange = Area(anchor=ANCHOR_CENTER)
 ButtonAbilitySave = Button(print_log=LOG_WHEN_TRUE, anchor=ANCHOR_BOTTOM_RIGHT)
 AreaAbilityPlanChangeButton = Area(anchor=ANCHOR_TOP_LEFT)

@@ -15,7 +15,8 @@ from whimbox.action.fishing import FishingTask
 from whimbox.common.scripts_manager import *
 from whimbox.map.convert import convert_GameLoc_to_PngMapPx
 from whimbox.ui.ui import ui_control
-from whimbox.ui.page_assets import page_main
+from whimbox.ui.page_assets import *
+from whimbox.ability.cvar import *
 
 
 class AutoPathTask(TaskTemplate):
@@ -226,6 +227,8 @@ class AutoPathTask(TaskTemplate):
                     else:
                         self.log_to_gui("测试跑图路线中，不进行钓鱼")
                         time.sleep(2)
+                elif self.target_point.action == ACTION_BIG:
+                    ability_manager.change_ability(ABILITY_NAME_BIG)
                 elif self.target_point.action == ACTION_WAIT:
                     wait_time = self.target_point.action_params
                     if wait_time is None:
