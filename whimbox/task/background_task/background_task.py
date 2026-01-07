@@ -12,6 +12,11 @@ from whimbox.task.task_template import STATE_TYPE_SUCCESS, STATE_TYPE_STOP
 from whimbox.common.cvars import current_stop_flag
 from whimbox.common.keybind import keybind
 from whimbox.common.handle_lib import HANDLE_OBJ
+from whimbox.common.utils.img_utils import process_with_hsv_limit, similar_img
+import cv2
+from pynput import keyboard
+from whimbox.ability.ability import ability_manager
+from whimbox.ability.cvar import ABILITY_NAME_FLOURISH
 
 
 class BackgroundFeature(Enum):
@@ -20,6 +25,7 @@ class BackgroundFeature(Enum):
     AUTO_DIALOGUE = "auto_dialogue"
     AUTO_PICKUP = "auto_pickup"
     AUTO_CLEAR = "auto_clear"
+    AUTO_FLOURISH = "auto_flourish"
 
 
 class FeatureConfig:
@@ -79,6 +85,7 @@ class BackgroundTaskManager:
             BackgroundFeature.AUTO_DIALOGUE: FeatureConfig(enabled=False, interval=5),
             BackgroundFeature.AUTO_PICKUP: FeatureConfig(enabled=False, interval=1),
             BackgroundFeature.AUTO_CLEAR: FeatureConfig(enabled=False, interval=3),
+            BackgroundFeature.AUTO_FLOURISH: FeatureConfig(enabled=False, interval=5),
         }
         
         # 从配置文件加载状态（但不自动启动任务）
@@ -117,14 +124,16 @@ class BackgroundTaskManager:
             auto_dialogue = global_config.get_bool("BackgroundTask", "auto_dialogue", False)
             auto_pickup = global_config.get_bool("BackgroundTask", "auto_pickup", False)
             auto_clear = global_config.get_bool("BackgroundTask", "auto_clear", False)
+            auto_flourish = global_config.get_bool("BackgroundTask", "auto_flourish", False)
             
             # 设置状态（不保存到配置文件，避免递归）
             self.feature_configs[BackgroundFeature.AUTO_FISHING].enabled = auto_fishing
             self.feature_configs[BackgroundFeature.AUTO_DIALOGUE].enabled = auto_dialogue
             self.feature_configs[BackgroundFeature.AUTO_PICKUP].enabled = auto_pickup
             self.feature_configs[BackgroundFeature.AUTO_CLEAR].enabled = auto_clear
+            self.feature_configs[BackgroundFeature.AUTO_FLOURISH].enabled = auto_flourish
             
-            logger.info(f"从配置文件加载后台任务状态: 钓鱼={auto_fishing}, 对话={auto_dialogue}, 采集={auto_pickup}, 清洁={auto_clear}")
+            logger.info(f"从配置文件加载后台任务状态: 钓鱼={auto_fishing}, 对话={auto_dialogue}, 采集={auto_pickup}, 清洁={auto_clear}, 芳间巡游={auto_flourish}")
         except Exception as e:
             logger.warning(f"加载后台任务配置失败: {e}")
     
@@ -187,6 +196,39 @@ class BackgroundTask:
             self.check_interval = 0.02
         self.was_paused = False  # 上一次循环是否处于暂停状态
         self.stop_event = threading.Event()  # 停止事件
+
+        self.listener = keyboard.Listener(on_press=self.on_key_press)
+        self.listener.daemon = True
+        self.listener.start()
+
+        self.need_flourish = False
+
+    def on_key_press(self, key):
+        if HANDLE_OBJ.is_foreground():
+            # 处理普通键和特殊键
+            key_str = self._get_key_str(key)
+            if key_str == 'tab':
+                if self.need_flourish:
+                    itt.key_press(keybind.KEYBIND_SPRINT)
+                    self.need_flourish = False
+                else:
+                    if ability_manager.get_current_ability() == ABILITY_NAME_FLOURISH:
+                        self.need_flourish = True
+    
+    def _get_key_str(self, key):
+        """将 pynput 的 key 对象转换为字符串"""
+        try:
+            # 普通字符键
+            if hasattr(key, 'char') and key.char:
+                return key.char.lower()
+        except AttributeError:
+            pass
+        
+        # 特殊键
+        if hasattr(key, 'name'):
+            return key.name.lower()
+        
+        return None
 
     def log_to_gui(self, msg, is_error=False, type="update_ai_message"):
         from whimbox.ingame_ui.ingame_ui import win_ingame_ui
@@ -258,6 +300,13 @@ class BackgroundTask:
                                 cap = itt.capture()
                                 if not self._detect_pickup_opportunity(cap):
                                     break
+
+                    # 检测芳间巡游状态 - 根据间隔执行
+                    flourish_config = self.manager.get_feature_config(BackgroundFeature.AUTO_FLOURISH)
+                    if self.need_flourish and flourish_config and flourish_config.should_execute():
+                        if self._detect_flourish_opportunity(cap):
+                            itt.right_click()
+                            time.sleep(0.4)
 
                     # 检测清洁跳过状态
                     clear_config = self.manager.get_feature_config(BackgroundFeature.AUTO_CLEAR)
@@ -348,6 +397,19 @@ class BackgroundTask:
         if itt.get_img_existence(IconPickupFeature, cap=cap):
             return True
         return False
+
+    def _detect_flourish_opportunity(self, cap) -> bool:
+        """检测是否可以芳间巡游"""
+        cap = itt.capture(anchor_posi=AreaAbilityButton.position)
+        lower_white = [0, 0, 230]
+        upper_white = [180, 60, 255]
+        img = process_with_hsv_limit(cap, lower_white, upper_white)
+        resize_icon = cv2.resize(IconAbilityFlourish.image, None, fx=0.73, fy=0.73, interpolation=cv2.INTER_LINEAR)
+        rate = similar_img(img, resize_icon[:, :, 0], ret_mode=IMG_RATE)
+        if rate > 0.8:
+            return True
+        else:
+            return False
 
     def _detect_clear_opportunity(self, cap) -> bool:
         """检测是否可以清洁跳过"""

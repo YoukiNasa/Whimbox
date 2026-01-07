@@ -59,6 +59,10 @@
         "auto_clear": {
             "value": "false",
             "description": "是否启用自动清洁跳过"
+        },
+        "auto_flourish": {
+            "value": "false",
+            "description": "是否启用自动芳间巡游"
         }
     },
     "Agent": {
@@ -173,6 +177,14 @@
         "falling":{
             "value": "q",
             "description": "急坠"
+        },
+        "sprint":{
+            "value": "shift",
+            "description": "冲刺"
+        },
+        "tab":{
+            "value": "tab",
+            "description": "套装切换"
         },
         "back":{
             "value": "backspace",

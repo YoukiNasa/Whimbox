@@ -15,6 +15,8 @@ class Keybind:
         self.KEYBIND_FORWARD = "w"
         self.KEYBIND_JUMP = "space"
         self.KEYBIND_FALLING = "q"
+        self.KEYBIND_SPRINT = "shift"
+        self.KEYBIND_TAB = "tab"
         self.KEYBIND_FISHING_REEL_IN = "mouse_right"
         self.KEYBIND_BACK = "backspace"
         self.KEYBIND_CHAT = "enter"
@@ -42,6 +44,8 @@ class Keybind:
         self.KEYBIND_FORWARD = global_config.get('Keybinds', 'forward')
         self.KEYBIND_JUMP = global_config.get('Keybinds', 'jump')
         self.KEYBIND_FALLING = global_config.get('Keybinds', 'falling')
+        self.KEYBIND_SPRINT = global_config.get('Keybinds', 'sprint')
+        self.KEYBIND_TAB = global_config.get('Keybinds', 'tab')
         self.KEYBIND_FISHING_REEL_IN = global_config.get('Keybinds', 'fishing_reel_in')
         self.KEYBIND_BACK = global_config.get('Keybinds', 'back')
         self.KEYBIND_CHAT = global_config.get('Keybinds', 'chat')
