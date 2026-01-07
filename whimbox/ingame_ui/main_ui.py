@@ -1,5 +1,6 @@
 import win32gui
 import win32con
+import win32process
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -39,7 +40,6 @@ class IngameUI(QWidget):
         self.ui_clickable = True
         self.current_view = 'chat'
         self.waiting_for_task_stop = False
-        self.is_minimized = False
         
         # UI组件初始化
         self.chat_view = None
@@ -64,8 +64,15 @@ class IngameUI(QWidget):
 
         # 5. 窗口系统设置
         self.setWindowTitle("奇想盒")
-        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.WindowMinimizeButtonHint)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
+        
+        # 设置窗口样式以支持任务栏交互
+        hwnd = int(self.winId())
+        style = win32gui.GetWindowLong(hwnd, win32con.GWL_STYLE)
+        # 确保窗口有最小化按钮样式
+        style |= win32con.WS_MINIMIZEBOX
+        win32gui.SetWindowLong(hwnd, win32con.GWL_STYLE, style)
         
         # 6. 获取焦点
         self.acquire_focus()
@@ -368,6 +375,8 @@ class IngameUI(QWidget):
         event_str = str(eventType)
         if "windows_generic_msg" in event_str.lower():
             msg = MSG.from_address(int(message))
+            
+            # 处理窗口大小调整和拖动
             if msg.message == win32con.WM_NCHITTEST:
                 pos = self.mapFromGlobal(QCursor.pos())
                 
@@ -391,6 +400,21 @@ class IngameUI(QWidget):
                     child = self.childAt(pos)
                     if not child or not isinstance(child, (QPushButton, QLineEdit, QTextEdit)):
                         return True, win32con.HTCAPTION
+            
+            # 处理系统命令（包括任务栏图标点击）
+            elif msg.message == win32con.WM_SYSCOMMAND:
+                command = msg.wParam & 0xFFF0
+                # SC_RESTORE: 还原窗口（从最小化状态）
+                if command == win32con.SC_RESTORE:
+                    if self.isMinimized():
+                        self.showNormal()
+                        self.activateWindow()
+                        self.raise_()
+                        return True, 0
+                # SC_MINIMIZE: 最小化窗口
+                elif command == win32con.SC_MINIMIZE:
+                    self.showMinimized()
+                    return True, 0
                         
         return super().nativeEvent(eventType, message)
 
@@ -410,24 +434,44 @@ class IngameUI(QWidget):
             global_config.set("General", "ui_width", new_size.width())
             global_config.set("General", "ui_height", new_size.height())
             global_config.save()
+    
+    def changeEvent(self, event):
+        """处理窗口状态变化事件"""
+        if event.type() == QEvent.WindowStateChange:
+            if self.isMinimized():
+                logger.info("Window minimized")
+            elif event.oldState() & Qt.WindowMinimized:
+                # 从最小化状态恢复
+                logger.info("Window restored from minimized state")
+        elif event.type() == QEvent.WindowActivate:
+            # 窗口被激活
+            logger.info("Window activated")
+        elif event.type() == QEvent.WindowDeactivate:
+            # 窗口失去激活状态
+            logger.info("Window deactivated")
+        super().changeEvent(event)
         
     def expand_chat(self):
         logger.info("Expanding chat interface")
         self.position_window()
-        self.show()
+        # 如果窗口被最小化，先还原
+        if self.isMinimized():
+            self.showNormal()
+        else:
+            self.show()
         self.acquire_focus()
         QTimer.singleShot(100, lambda: self.chat_view.set_focus_to_input() if self.chat_view else None)
     
     def toggle_minimize(self):
-        if self.is_minimized or self.windowState() & Qt.WindowMinimized:
-            self.setWindowState(Qt.WindowActive)
+        """切换窗口最小化/还原状态"""
+        if self.isMinimized():
+            # 还原窗口
             self.showNormal()
-            self.is_minimized = False
-            logger.info("Window restored from taskbar")
+            self.activateWindow()
+            self.raise_()
         else:
+            # 最小化窗口
             self.showMinimized()
-            self.is_minimized = True
-            logger.info("Window minimized to taskbar")
     
     def close_application(self):
         reply = QMessageBox.question(self, '确认关闭', '确定要关闭奇想盒吗？', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
@@ -468,8 +512,35 @@ class IngameUI(QWidget):
     def acquire_focus(self):
         hwnd = int(self.winId())
         win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE) & ~win32con.WS_EX_TRANSPARENT)
-        self.setWindowState(Qt.WindowMinimized)
-        self.setWindowState(Qt.WindowActive)
+        # # 如果窗口被最小化，先还原
+        # if self.isMinimized():
+        #     self.showNormal()
+        
+        # 使用 Windows API 的技巧来获取焦点 - 附加到前台窗口的线程
+        try:
+            foreground_hwnd = win32gui.GetForegroundWindow()
+            if foreground_hwnd != hwnd:
+                # 获取前台窗口的线程ID
+                foreground_thread = win32process.GetWindowThreadProcessId(foreground_hwnd)[0]
+                # 获取当前窗口的线程ID
+                current_thread = win32process.GetWindowThreadProcessId(hwnd)[0]
+                
+                # 附加到前台窗口的线程，这样可以绕过 SetForegroundWindow 的限制
+                if foreground_thread != current_thread:
+                    ctypes.windll.user32.AttachThreadInput(current_thread, foreground_thread, True)
+                
+                # 现在设置前台窗口
+                win32gui.SetForegroundWindow(hwnd)
+                win32gui.BringWindowToTop(hwnd)
+                
+                # 分离线程
+                if foreground_thread != current_thread:
+                    ctypes.windll.user32.AttachThreadInput(current_thread, foreground_thread, False)
+                
+                logger.info(f"Set UI window as foreground: {hwnd}")
+        except Exception as e:
+            logger.warning(f"Failed to set foreground window: {e}")
+        
         self.ui_clickable = True
         self.update_focus_visual(True)
 
@@ -503,29 +574,17 @@ class IngameUI(QWidget):
         self.toggle_minimize()
     
     def update_ui_focus(self):
-        if self.isVisible() and not self.task_running:
-            if HANDLE_OBJ.is_foreground() and self.ui_clickable:
+        if (not self.isMinimized()) and (not self.task_running):
+            game_is_foreground = HANDLE_OBJ.is_foreground()
+            
+            # 原逻辑：如果游戏是前台且UI可点击，把焦点还给游戏
+            # 但现在加上检查：只有当UI确实不是前台时才还焦点
+            if game_is_foreground and self.ui_clickable:
                 self.give_back_focus()
-            elif not HANDLE_OBJ.is_foreground() and not self.ui_clickable:
+            # 原逻辑：如果游戏不是前台且UI不可点击，获取焦点
+            elif not game_is_foreground and not self.ui_clickable:
                 self.acquire_focus()
     
     def update_message(self, message: str, type="update_ai_message"):
         if self.chat_view:
             self.chat_view.ui_update_signal.emit(type, message)
-    
-    # def eventFilter(self, obj, event):
-    #     return super().eventFilter(obj, event)
-    
-    # def handle_resize(self, global_pos: QPoint):
-    #     pass
-    
-    def changeEvent(self, event):
-        if event.type() == QEvent.WindowStateChange:
-            if self.windowState() & Qt.WindowMinimized:
-                self.is_minimized = True
-                logger.info("Window minimized")
-            else:
-                if self.is_minimized:
-                    self.is_minimized = False
-                    logger.info("Window restored")
-        super().changeEvent(event)
