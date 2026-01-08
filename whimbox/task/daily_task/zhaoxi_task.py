@@ -55,7 +55,7 @@ zxxy_task_info_list = [
     {
         "key_words": ["小游戏"],
         "score": 200,
-        "priority": 2,
+        "priority": 1,
         "task_name": DAILY_TASK_MINIGAME
     },
     {
@@ -67,7 +67,7 @@ zxxy_task_info_list = [
     {
         "key_words": ["挖掘"],
         "score": 100,
-        "priority": 5,
+        "priority": 0,
         "task_name": DAILY_TASK_DIG
     },
     {
@@ -187,7 +187,9 @@ class ZhaoxiTask(TaskTemplate):
     @register_step("消耗剩余体力")
     def step4(self):
         energy_cost = global_config.get("Game", "energy_cost")
-        if energy_cost == "素材激化幻境":
+        if energy_cost == "不消耗剩余体力":
+            self.log_to_gui("已设置不消耗剩余体力，跳过")
+        elif energy_cost == "素材激化幻境":
             if DAILY_TASK_JIHUA not in self.done_task_names:
                 task = daily_task.JihuaTask()
                 task.task_run()

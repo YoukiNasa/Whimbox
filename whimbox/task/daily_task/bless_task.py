@@ -1,5 +1,5 @@
 '''祝福闪光幻境'''
-from whimbox.task.task_template import TaskTemplate, register_step
+from whimbox.task.task_template import STATE_TYPE_FAILED, STEP_NAME_FINISH, TaskTemplate, register_step
 from whimbox.ui.ui import ui_control
 from whimbox.ui.page_assets import *
 from whimbox.interaction.interaction_core import itt
@@ -19,6 +19,10 @@ class BlessTask(TaskTemplate):
 
     @register_step("正在前往祝福闪光幻境")
     def step1(self):
+        if self.level_name == '不做祝福闪光幻境':
+            self.log_to_gui("已设置不做祝福闪光幻境，跳过")
+            self.update_task_result(status=STATE_TYPE_FAILED, message="已设置不做祝福闪光幻境，跳过")
+            return STEP_NAME_FINISH
         ui_control.goto_page(page_huanjing_bless)
     
 

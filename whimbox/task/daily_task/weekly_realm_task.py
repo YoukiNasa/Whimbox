@@ -13,11 +13,17 @@ class WeeklyRealmTask(TaskTemplate):
         realm_target = global_config.get("Game", "realm_target")
         if realm_target == "全部":
             self.realm_target = ["奇格格达", "卷卷"]
+        elif realm_target == "不做周本":
+            self.realm_target = []
         else:
             self.realm_target = [realm_target]
 
-    @register_step("检查每周幻境完成情况")
+    @register_step("检查周本完成情况")
     def step1(self):
+        if len(self.realm_target) == 0:
+            self.log_to_gui("已设置不做周本，跳过")
+            self.update_task_result(status=STATE_TYPE_SUCCESS, message="已设置不做周本，跳过")
+            return STEP_NAME_FINISH
         ui_control.goto_page(page_daily_task)
         weekly_count_str = itt.ocr_single_line(AreaWeeklyCountText)
         try:
