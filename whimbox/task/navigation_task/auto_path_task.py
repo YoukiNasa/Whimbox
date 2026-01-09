@@ -362,6 +362,15 @@ class AutoPathTask(TaskTemplate):
         
 
     def clear_all(self):
+        self.last_position = None
+        self.curr_position = None
+        self.curr_target_point_id = 0
+        self.target_point: PathPoint = None
+        self.need_move_mode = MOVE_MODE_WALK
+        self.last_need_move_mode = MOVE_MODE_WALK
+        self.current_game_move_mode = MOVE_MODE_WALK
+        self.once_loop_time = 0
+
         self.stop_move()
         self.change_to_walk()
         if self.jump_controller is not None and self.move_controller is not None:
