@@ -29,8 +29,8 @@ class QueryWorker(QThread):
             def status_callback(status_type, message=""):
                 self.ui_update_signal.emit(f"status_{status_type}", message)
             
-            is_ready, err_msg = mcp_agent.is_ready()
-            if not is_ready:
+            agent_ready, _, err_msg = mcp_agent.is_ready()
+            if not agent_ready:
                 self.ui_update_signal.emit("handle_error", err_msg)
                 self.ui_update_signal.emit("status_error", err_msg)
                 return

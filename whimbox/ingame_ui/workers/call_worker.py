@@ -21,8 +21,8 @@ class TaskCallWorker(QThread):
     def run(self):
         """在后台线程中执行异步调用"""
         try:
-            is_ready, err_msg = mcp_agent.is_ready()
-            if not is_ready:
+            _, mcp_ready, err_msg = mcp_agent.is_ready()
+            if not mcp_ready:
                 self.finished.emit(False, {"message":err_msg})
                 return
             logger.info(f"Starting task: {self.tool_name} with params: {self.params}")

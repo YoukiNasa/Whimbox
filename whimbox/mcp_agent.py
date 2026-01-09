@@ -33,6 +33,7 @@ class Agent:
             return
         self.langchain_agent = None
         self.err_msg = ""
+        self.mcp_ready = False
         self.llm = None
         self.memory = None
         self.tools = None
@@ -72,6 +73,7 @@ class Agent:
                 await asyncio.sleep(0.5)
             if flag:
                 logger.debug("MCP server ready")
+                self.mcp_ready = True
                 client = MultiServerMCPClient({
                     "whimbox": {
                         "url": f'{server_url}/mcp',
@@ -102,8 +104,8 @@ class Agent:
             logger.error("MCP AGENT 初始化失败")
 
     def is_ready(self):
-        status = self.langchain_agent is not None
-        return status, self.err_msg
+        agent_ready = self.langchain_agent is not None
+        return agent_ready, self.mcp_ready, self.err_msg
 
     async def query_agent(self, text, thread_id="default", stream_callback=None, status_callback=None):
         logger.debug("开始调用大模型")
