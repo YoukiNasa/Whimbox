@@ -1,10 +1,10 @@
 from PyQt5.QtCore import QThread, pyqtSignal
 from fastmcp import Client
 import asyncio
-from whimbox.config.config import global_config
 from whimbox.common.logger import logger
 from fastmcp.client.transports import StreamableHttpTransport
 from whimbox.common.cvars import MCP_CONFIG
+from whimbox.mcp_agent import mcp_agent
 
 
 class TaskCallWorker(QThread):
@@ -21,6 +21,10 @@ class TaskCallWorker(QThread):
     def run(self):
         """在后台线程中执行异步调用"""
         try:
+            is_ready, err_msg = mcp_agent.is_ready()
+            if not is_ready:
+                self.finished.emit(False, {"message":err_msg})
+                return
             logger.info(f"Starting task: {self.tool_name} with params: {self.params}")
             # self.progress.emit(f"正在启动任务: {self.tool_name}...")
             

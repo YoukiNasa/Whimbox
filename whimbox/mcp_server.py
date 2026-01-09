@@ -363,16 +363,16 @@ def get_available_port(max_attempts: int = 100) -> int:
             return port
         logger.debug(f"MCP服务器端口 {port} 已被占用，尝试下一个端口")
         port += 1
-    
-    raise RuntimeError(f"MCP服务器无法找到可用端口，已尝试从 {MCP_CONFIG['port']} 到 {port-1}")
+    return None
 
 def start_mcp_server():
     logger.debug("开始初始化MCP服务器")
-    get_available_port()
-    mcp.run(
-        show_banner=False,
-        transport="streamable-http",
-        host='0.0.0.0',
-        port=MCP_CONFIG["port"],
-    )
+    port = get_available_port()
+    if port:
+        mcp.run(
+            show_banner=False,
+            transport="streamable-http",
+            host='0.0.0.0',
+            port=MCP_CONFIG["port"],
+        )
     
