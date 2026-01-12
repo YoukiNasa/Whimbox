@@ -55,7 +55,7 @@ zxxy_task_info_list = [
     {
         "key_words": ["小游戏"],
         "score": 200,
-        "priority": 1,
+        "priority": 0,
         "task_name": DAILY_TASK_MINIGAME
     },
     {
@@ -95,6 +95,7 @@ class ZhaoxiTask(TaskTemplate):
     def __init__(self):
         super().__init__("zhaoxi_task")
         self.current_score = 0
+        self.need_cost_energy = 0
 
     @register_step("检查朝夕心愿完成情况")
     def step1(self):
@@ -130,21 +131,33 @@ class ZhaoxiTask(TaskTemplate):
                             is_match = False
                             break
                     if is_match:
-                        return task_info
-                return None
+                        return task_info, task_text
+                return None, None
             else:
-                return None
+                return None, None
 
         # 获得未完成任务列表
         self.unfinished_tasks = []
         for click_pos in DAILY_TASK_CENTERS:
             if self.need_stop():
                 break
-            unfinished_task = check_task(click_pos)
+            unfinished_task, task_text = check_task(click_pos)
             if unfinished_task == None:
                 continue
             else:
-                self.log_to_gui(f"未完成任务：{unfinished_task['task_name']}")
+                if unfinished_task['task_name'] == DAILY_TASK_COST_ENERGY:
+                    index1 = task_text.find("消耗") + 2
+                    index2 = task_text.find("点")
+                    energy_text = task_text[index1 : index2]
+                    try:
+                        used_energy = int(energy_text.split("/")[0])
+                        total_energy = int(energy_text.split("/")[1])
+                        self.need_cost_energy = total_energy - used_energy
+                    except:
+                        self.need_cost_energy = 150
+                    self.log_to_gui(f"未完成任务：{unfinished_task['task_name']}{self.need_cost_energy}点")
+                else:
+                    self.log_to_gui(f"未完成任务：{unfinished_task['task_name']}")
                 self.unfinished_tasks.append(unfinished_task)
         
         # 根据优先级和分数排序
@@ -152,13 +165,15 @@ class ZhaoxiTask(TaskTemplate):
             key=lambda x: (x['priority'], x['score']),
             reverse=True
         )
+        back_to_page_main()
 
     @register_step("开始做朝夕心愿任务")
     def step3(self):
         task_dict = {
+            DAILY_TASK_COST_ENERGY: daily_task.CheckEnergyTask(need_cost_energy=self.need_cost_energy),
             DAILY_TASK_PICKUP: AutoPathTask(path_name="朝夕心愿_采集", excepted_num=5),
             DAILY_TASK_CATCH_INSECT: AutoPathTask(path_name="朝夕心愿_捕虫", excepted_num=3),
-            DAILY_TASK_MINIGAME: AutoPathTask(path_name="朝夕心愿_小游戏"),
+            # DAILY_TASK_MINIGAME: AutoPathTask(path_name="朝夕心愿_小游戏"),
             DAILY_TASK_GET_BLESS: daily_task.BlessTask(),
             DAILY_TASK_JIHUA: daily_task.JihuaTask(),
             DAILY_TASK_MONSTER: daily_task.MonsterTask(),
@@ -169,10 +184,7 @@ class ZhaoxiTask(TaskTemplate):
             if self.current_score >= 500 or self.need_stop():
                 break
             task_name = task['task_name']
-            if task_name == DAILY_TASK_COST_ENERGY:
-                # 消耗体力留到最后再做，为了避免体力不够做，分数就不加了
-                pass
-            elif task_name in task_dict:
+            if task_name in task_dict:
                 task_obj = task_dict[task_name]
                 result = task_obj.task_run()
                 if result.status == STATE_TYPE_SUCCESS:

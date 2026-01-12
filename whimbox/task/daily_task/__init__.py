@@ -7,3 +7,4 @@ from .all_in_one_task import AllInOneTask
 from .monthly_pass_task import MonthlyPassTask
 from .weekly_realm_task import WeeklyRealmTask
 from .xinghai_task import XinghaiTask
+from .check_energy_task import CheckEnergyTask

@@ -18,7 +18,7 @@ from whimbox.task.navigation_task.auto_path_task import AutoPathTask
 
 xhsg_task_info_list = [
     {
-        "key_words": ["拍下", "张照"], # ocr有概率识别不出“照片”两个字
+        "key_words": ["拍下", "你的存在"],
         "score": 200,
         "priority": 5,
         "task_name": XHSG_TASK_TAKE_PHOTO
@@ -205,6 +205,7 @@ class XinghaiTask(TaskTemplate):
             key=lambda x: (x['priority'], x['score']),
             reverse=True
         )
+        back_to_page_main()
 
     @register_step("开始做星海拾光任务")
     def step4(self):

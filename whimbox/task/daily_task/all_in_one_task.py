@@ -40,9 +40,6 @@ class AllInOneTask(TaskTemplate):
         dig_task = daily_task.DigTaskV2()
         task_result = dig_task.task_run()
         self.task_result_list['dig_task'] = task_result.status == STATE_TYPE_SUCCESS
-
-    @register_step("检查周本进度")
-    def step2(self):
         self.log_to_gui("检查是否在家园")
         from whimbox.map.map import nikki_map
         nikki_map.reinit_smallmap()
@@ -50,6 +47,9 @@ class AllInOneTask(TaskTemplate):
         if nikki_map.map_name == MAP_NAME_UNSUPPORTED:
             loc = convert_GameLoc_to_PngMapPx([-13172.34765625, -54273.6171875], MAP_NAME_MIRALAND)
             nikki_map.bigmap_tp(loc, MAP_NAME_MIRALAND)
+
+    @register_step("检查周本进度")
+    def step2(self):
         weekly_realm_task = daily_task.WeeklyRealmTask()
         task_result = weekly_realm_task.task_run()
         self.task_result_list['weekly_realm_task'] = task_result.status == STATE_TYPE_SUCCESS
@@ -74,32 +74,32 @@ class AllInOneTask(TaskTemplate):
 
     @register_step("一条龙结束")
     def step6(self):
-        msg = ""
+        msg = "任务结果如下：\n"
 
         if self.task_result_list['dig_task']:
-            msg += "美鸭梨挖掘成功,"
+            msg += "✅美鸭梨挖掘成功\n"
         else:
-            msg += "美鸭梨挖掘还无法收获,"
+            msg += "❌美鸭梨挖掘还无法收获\n"
 
         if self.task_result_list['weekly_realm_task']:
-            msg += "每周幻境已完成,"
+            msg += "✅每周幻境已完成\n"
         else:
-            msg += "每周幻境未完成,"
+            msg += "❌每周幻境未完成\n"
 
         if self.task_result_list['zhaoxi_task']:
-            msg += "朝夕心愿已完成,"
+            msg += "✅朝夕心愿已完成\n"
         else:
-            msg += "朝夕心愿未完成,"
+            msg += "❌朝夕心愿未完成\n"
 
         if self.task_result_list['xinghai_task']:
-            msg += "星海拾光已完成,"
+            msg += "✅星海拾光已完成\n"
         else:
-            msg += "星海拾光未完成,"
+            msg += "❌星海拾光未完成\n"
 
         if self.task_result_list['monthly_pass_task']:
-            msg += "奇迹之旅已领取,"
+            msg += "✅奇迹之旅已领取\n"
         else:
-            msg += "奇迹之旅未领取,"
+            msg += "❌奇迹之旅未领取\n"
             
         self.update_task_result(message=msg, data=self.task_result_list)
 
