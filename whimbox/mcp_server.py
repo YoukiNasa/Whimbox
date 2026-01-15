@@ -6,6 +6,7 @@ from whimbox.task.photo_task.daily_photo_task import DailyPhotoTask
 from whimbox.task.macro_task.record_macro_task import RecordMacroTask
 from whimbox.task.macro_task.run_macro_task import RunMacroTask
 from whimbox.task.daily_task.xinghai_task import XinghaiTask
+from whimbox.task.mira_crown_task.mira_crown_task import MiraCrownTask
 from whimbox.task.task_template import STATE_TYPE_SUCCESS, STATE_TYPE_ERROR
 from whimbox.common.logger import logger
 from whimbox.common.cvars import MCP_CONFIG
@@ -337,6 +338,17 @@ async def xinghai_task() -> dict:
     task_result = xinghai_task.task_run()
     return task_result.to_dict()
 
+@mcp.tool()
+@check_game_ok
+async def mira_crown_task() -> dict:
+    """
+    奇迹之冠搭配赛，奇迹之冠巅峰赛
+    Returns:
+        dict: 包含操作状态的字典，包含status和message字段
+    """
+    mira_crown_task = MiraCrownTask(force_start=True)
+    task_result = mira_crown_task.task_run()
+    return task_result.to_dict()
 
 @mcp.custom_route("/health", methods=["GET"])
 async def health_check(request):

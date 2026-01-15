@@ -199,6 +199,9 @@ def scroll_to_top(area: Area):
     
 def wait_until_appear_then_click(obj, retry_time=3):
     while retry_time > 0:
+        stop_flag = get_current_stop_flag()
+        if stop_flag.is_set():
+            return False
         if isinstance(obj, Button):
             if itt.appear_then_click(obj):
                 return True
@@ -208,12 +211,16 @@ def wait_until_appear_then_click(obj, retry_time=3):
         else:
             return False
         retry_time -= 1
-        time.sleep(1)
+        if retry_time > 0:
+            time.sleep(1)
     return False
 
 
 def wait_until_appear(obj, area=None, retry_time=3):
     while retry_time > 0:
+        stop_flag = get_current_stop_flag()
+        if stop_flag.is_set():
+            return False
         if area:
             cap = itt.capture(anchor_posi=area.position)
         else:
@@ -239,6 +246,8 @@ def back_to_page_main():
         itt.wait_until_stable(threshold=0.95)
         if itt.get_img_existence(IconDungeonFeature):
             itt.key_press(keybind.KEYBIND_BACK)
+            itt.delay(0.5)
+            wait_until_appear_then_click(ButtonDungeonQuitOK, retry_time=1)
         elif itt.get_img_existence(IconPageMainFeature):
             break
         else:

@@ -10,6 +10,7 @@ AreaPageTitleFeature = Area(anchor=ANCHOR_TOP_LEFT)
 # 主界面、esc菜单
 IconPageMainFeature = ImgIcon(print_log=LOG_NONE, threshold=0.90, gray_limit=(230, 255), anchor=ANCHOR_BOTTOM_LEFT)
 IconDungeonFeature = ImgIcon(print_log=LOG_ALL, threshold=0.90, gray_limit=(230, 255), anchor=ANCHOR_TOP_LEFT)
+ButtonDungeonQuitOK = Button(print_log=LOG_ALL, anchor=ANCHOR_CENTER)
 AreaUITime = Area(anchor=ANCHOR_TOP_LEFT)
 AreaEscEntrances = Area(anchor=ANCHOR_LEFT_CENTER)
 # 商城抽卡特征
@@ -49,6 +50,7 @@ AreaPickup = Area(anchor=ANCHOR_CENTER, expand=True)
 TextPickUp = Text("拾取", cap_area = AreaPickup)
 IconPickupFeature = ImgIcon(print_log=LOG_NONE, threshold=0.75, gray_limit=(210, 255))
 IconSetdownFeature = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.75, gray_limit=(210, 255))
+IconTalkFeature = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.75, gray_limit=(210, 255))
 IconSkip = ImgIcon(print_log=LOG_NONE, threshold=0.73, gray_limit=(210, 255), anchor=ANCHOR_BOTTOM_RIGHT)
 IconClickSkip = ImgIcon(print_log=LOG_ALL, threshold=0.80, gray_limit=(210, 255), anchor=ANCHOR_BOTTOM_RIGHT)
 AreaDialogSelection = Area(anchor=ANCHOR_RIGHT_CENTER)
@@ -185,8 +187,15 @@ ButtonMonthlyPassTab1 = Button(print_log=LOG_WHEN_TRUE, threshold=0.95, anchor=A
 ButtonMonthlyPassTab2 = Button(print_log=LOG_WHEN_TRUE, threshold=0.95, anchor=ANCHOR_TOP_LEFT)
 
 # 奇迹之冠
-AreaMiraCrownOverview = Area()
-ButtonMiraCrownQuickPlay = Button(print_log=LOG_WHEN_TRUE)
+AreaMiraCrownOverview = Area(anchor=ANCHOR_CENTER)
+AreaMiraCrownEntrance = Area(anchor=ANCHOR_TOP_LEFT)
+ButtonMiraCrownQuickReward = Button(anchor=ANCHOR_CENTER, print_log=LOG_ALL)
+AreaMiraCrownThirdDoor = Area(anchor=ANCHOR_CENTER)
+ButtonMiraCrownStartChallenge = Button(anchor=ANCHOR_BOTTOM_RIGHT, print_log=LOG_ALL)
+AreaMiraCrownAutoMatchButton = Area(anchor=ANCHOR_TOP_RIGHT)
+ButtonMiraCrownNextStep = Button(anchor=ANCHOR_BOTTOM_LEFT, print_log=LOG_ALL)
+ButtonMiraCrownConfirmMatch = Button(anchor=ANCHOR_BOTTOM_LEFT, print_log=LOG_ALL)
+ButtonMiraCrownSkipAll = Button(anchor=ANCHOR_TOP_RIGHT, print_log=LOG_ALL, threshold=0.80, hsv_limit=([20,20,180], [30,100,255]))
 
 # 活动相关
 # 1.11大富翁活动

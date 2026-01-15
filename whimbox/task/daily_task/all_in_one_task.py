@@ -2,7 +2,7 @@
 
 from whimbox.task.task_template import *
 from whimbox.task import daily_task
-from whimbox.config.config import global_config
+from whimbox.task.mira_crown_task.mira_crown_task import MiraCrownTask
 from whimbox.task.daily_task.cvar import *
 from whimbox.task.common_task.start_game_task import StartGameTask
 from whimbox.map.detection.cvars import MAP_NAME_MIRALAND, MAP_NAME_UNSUPPORTED
@@ -18,6 +18,7 @@ class AllInOneTask(TaskTemplate):
             'weekly_realm_task': False,
             'zhaoxi_task': False,
             'xinghai_task': False,
+            'mira_crown_task': False,
             'monthly_pass_task': False,
         }
 
@@ -66,14 +67,20 @@ class AllInOneTask(TaskTemplate):
         task_result = xinghai_task.task_run()
         self.task_result_list['xinghai_task'] = task_result.status == STATE_TYPE_SUCCESS
 
-    @register_step("领取奇迹之旅奖励")
+    @register_step("开始完成奇迹之冠巅峰赛")
     def step5(self):
+        mira_crown_task = MiraCrownTask()
+        task_result = mira_crown_task.task_run()
+        self.task_result_list['mira_crown_task'] = task_result.status == STATE_TYPE_SUCCESS
+
+    @register_step("领取奇迹之旅奖励")
+    def step6(self):
         monthly_pass_task = daily_task.MonthlyPassTask()
         task_result = monthly_pass_task.task_run()
         self.task_result_list['monthly_pass_task'] = task_result.status == STATE_TYPE_SUCCESS
 
     @register_step("一条龙结束")
-    def step6(self):
+    def step7(self):
         msg = "任务结果如下：\n"
 
         if self.task_result_list['dig_task']:
@@ -96,10 +103,15 @@ class AllInOneTask(TaskTemplate):
         else:
             msg += "❌星海拾光未完成\n"
 
-        if self.task_result_list['monthly_pass_task']:
-            msg += "✅奇迹之旅已领取\n"
+        if self.task_result_list['mira_crown_task']:
+            msg += "✅奇迹之冠巅峰赛已完成\n"
         else:
-            msg += "❌奇迹之旅未领取\n"
+            msg += "❌奇迹之冠巅峰赛未完成\n"
+
+        if self.task_result_list['monthly_pass_task']:
+            msg += "✅奇迹之旅已领取"
+        else:
+            msg += "❌奇迹之旅未领取"
             
         self.update_task_result(message=msg, data=self.task_result_list)
 

@@ -1,6 +1,6 @@
 '''奇迹之冠'''
-from whimbox.common.utils.ui_utils import scroll_find_click
-from whimbox.task.task_template import TaskTemplate, register_step
+from whimbox.common.utils.ui_utils import *
+from whimbox.task.task_template import *
 from whimbox.ui.ui import ui_control
 from whimbox.ui.page_assets import *
 from whimbox.ui.ui_assets import *
@@ -9,40 +9,109 @@ from whimbox.interaction.interaction_core import itt
 import time
 
 class MiraCrownTask(TaskTemplate):
-    def __init__(self):
+    def __init__(self, force_start=False):
         super().__init__("mira_crown_task")
+        self.force_start = force_start
     
-    @register_step("检查奇迹之冠进度")
+    @register_step("检查奇迹之冠巅峰赛进度")
     def step1(self):
         ui_control.goto_page(page_daily_task)
-        texts = itt.ocr_multiple_lines(AreaMiraCrownOverview)
-        for text in texts:
-            if text.endswith("/45"):
-                star_num = int(text.split("/")[0])
-                if star_num < 45:
-                    self.task_stop(message="请先完成基础搭配赛")
-                    break
-            if text.endswith("/24"):
-                star_num = int(text.split("/")[0])
-                if star_num < 24:
-                    self.log_to_gui(f"奇迹之冠进度为{text}")
-                    AreaMiraCrownOverview.click()
-                    itt.delay(1, comment="等待奇迹之冠页面加载")
-                else:
-                    ui_control.goto_page(page_main)
-                    self.task_stop(message="奇迹之冠进度已满")
-                break
+        text = itt.ocr_single_line(AreaMiraCrownOverview)
+        count_str = text.replace('v', '').replace('V', '').replace(' ', '')
+        try:
+            finished_count = int(count_str.split("/")[0])
+            total_count = int(count_str.split("/")[1])
+        except:
+            raise Exception(f"检查奇迹之冠巅峰赛进度识别异常:{count_str}")
+        self.log_to_gui(f"奇迹之冠巅峰赛进度为{finished_count}/{total_count}")
+        if finished_count != 0 and not self.force_start:
+            self.update_task_result(message=f"奇迹之冠巅峰赛已做过，直接跳过")
+            return STEP_NAME_FINISH
+        else:
+            return
 
-    @register_step("快速通关")
+    @register_step("进入奇迹之冠巅峰赛")
     def step2(self):
-        itt.appear_then_click(ButtonMiraCrownQuickPlay)
-
-    # 未完待续
+        AreaMiraCrownOverview.click()
+        itt.wait_until_stable(0.95)
+        AreaMiraCrownEntrance.click()
+        if wait_until_appear_then_click(ButtonMiraCrownQuickReward):
+            skip_get_award()
+    
+    @register_step("进入挑战")
+    def step3(self):
+        itt.wait_until_stable(0.95)
+        AreaMiraCrownThirdDoor.click()
+        itt.wait_until_stable(0.95)
+        itt.move_to((0, 0)) # 移走鼠标，避免触发某些ui的悬停效果，影响识别
+        if wait_until_appear_then_click(ButtonMiraCrownStartChallenge):
+            itt.wait_until_stable(threshold=0.95)
+            ui_control.ui_additional()
+            if not wait_until_appear(IconPageMainFeature, retry_time=10):
+                raise Exception("未进入奇迹之冠巅峰赛内部")
+        else:
+            self.update_task_result(message="之前已经全都挑战完了")
+            return STEP_NAME_FINISH
+        retry_time = 3
+        while not self.need_stop() and retry_time > 0:
+            itt.key_down(keybind.KEYBIND_FORWARD)
+            time.sleep(0.8)
+            itt.key_up(keybind.KEYBIND_FORWARD)
+            time.sleep(0.2) # 等待弹出按钮
+            if wait_until_appear(IconTalkFeature, area=AreaPickup):
+                itt.key_press(keybind.KEYBIND_INTERACTION)
+                return
+            retry_time -= 1
+        if retry_time == 0:
+            raise Exception("未找到对话按钮")
+        
+    
+    @register_step("开始挑战")
+    def step4(self):
+        skip_dialog()
+        itt.delay(0.5, comment="等待对话选项弹出")
+        if not scroll_find_click(AreaDialogSelection, "继续挑战", need_scroll=False):
+            if not scroll_find_click(AreaDialogSelection, "开始挑战", need_scroll=False):
+                raise Exception("未找到对话选项：开始挑战或继续挑战")
+        skip_dialog()
+        return
+        
+    @register_step("使用推荐搭配")
+    def step5(self):
+        wait_until_appear(ButtonMiraCrownNextStep)
+        if not scroll_find_click(AreaMiraCrownAutoMatchButton, "推荐搭配", need_scroll=False):
+            raise Exception("未找到推荐搭配按钮")
+        itt.delay(1, comment="搭配完会卡一下")
+        if not wait_until_appear_then_click(ButtonMiraCrownNextStep):
+            raise Exception("未找到下一步按钮")
+        if not wait_until_appear_then_click(ButtonMiraCrownConfirmMatch):
+            raise Exception("未找到确认搭配按钮")
+        wait_time = 20
+        while not self.need_stop() and wait_time > 0:
+            if itt.get_img_existence(ButtonMiraCrownSkipAll):
+                ButtonMiraCrownSkipAll.click()
+            if itt.get_img_existence(IconClickSkip):
+                itt.key_press(keybind.KEYBIND_INTERACTION)
+                break
+            time.sleep(1)
+            wait_time -= 1
+        if wait_time == 0:
+            # 等了20秒，怎么也应该结束了
+            itt.key_press(keybind.KEYBIND_INTERACTION)
+        itt.delay(2, comment="等待从挑战中退出来")
+        skip_get_award()
+        # 打完最后一关，会退出到主界面，否则会继续进入对话
+        if itt.get_img_existence(IconPageMainFeature):
+            return
+        else:
+            return "step4"
+    
+    @register_step("挑战结束")
+    def step6(self):
+        back_to_page_main()
 
 
 if __name__ == "__main__":
-    # task = MiraCrownTask()
-    # result = task.task_run()
-    # print(result.to_dict())
-    texts = itt.ocr_multiple_lines(AreaMiraCrownOverview)
-    print(texts)
+    task = MiraCrownTask(force_start=True)
+    result = task.task_run()
+    print(result.to_dict())
