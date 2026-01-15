@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-import os
+import webbrowser
 
 from whimbox.common.logger import logger
 from whimbox.common.scripts_manager import scripts_manager
@@ -91,7 +91,28 @@ class MacroSelectionDialog(QDialog):
         filter_row2 = QHBoxLayout()
         filter_row2.setSpacing(8)
         filter_row2.addStretch()
-        
+
+        subscribe_button = QPushButton("🌐 前往宏订阅网站")
+        subscribe_button.setFixedSize(120, 24)
+        subscribe_button.clicked.connect(self.open_subscribe_page)
+        subscribe_button.setStyleSheet("""
+            QPushButton {
+                background-color: #9C27B0;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                font-size: 8pt;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #7B1FA2;
+            }
+            QPushButton:pressed {
+                background-color: #6A1B9A;
+            }
+        """)
+        filter_row2.addWidget(subscribe_button)
+
         open_folder_button = QPushButton("📁 打开宏文件夹")
         open_folder_button.setFixedSize(120, 24)
         open_folder_button.clicked.connect(self.open_macro_folder)
@@ -322,6 +343,14 @@ class MacroSelectionDialog(QDialog):
         if not res:
             QMessageBox.warning(self, "提示", msg)
     
+    def open_subscribe_page(self):
+        try:
+            webbrowser.open("https://nikkigallery.vip/whimbox/scripts")
+            logger.info("Opened subscribe page in browser")
+        except Exception as e:
+            logger.error(f"Failed to open subscribe page: {e}")
+            QMessageBox.warning(self, "提示", f"打开网页失败: {str(e)}")
+
     def reload_macros(self):
         """刷新宏列表"""
         scripts_manager.init_scripts_dict()
