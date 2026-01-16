@@ -190,6 +190,7 @@ ButtonMonthlyPassTab2 = Button(print_log=LOG_WHEN_TRUE, threshold=0.95, anchor=A
 AreaMiraCrownOverview = Area(anchor=ANCHOR_CENTER)
 AreaMiraCrownEntrance = Area(anchor=ANCHOR_TOP_LEFT)
 ButtonMiraCrownQuickReward = Button(anchor=ANCHOR_CENTER, print_log=LOG_ALL)
+AreaMiraCrownSecondDoor = Area(anchor=ANCHOR_CENTER)
 AreaMiraCrownThirdDoor = Area(anchor=ANCHOR_CENTER)
 ButtonMiraCrownStartChallenge = Button(anchor=ANCHOR_BOTTOM_RIGHT, print_log=LOG_ALL)
 AreaMiraCrownAutoMatchButton = Area(anchor=ANCHOR_TOP_RIGHT)

@@ -12,6 +12,7 @@ class MiraCrownTask(TaskTemplate):
     def __init__(self, force_start=False):
         super().__init__("mira_crown_task")
         self.force_start = force_start
+        self.is_quick_reward = False
     
     @register_step("检查奇迹之冠巅峰赛进度")
     def step1(self):
@@ -36,12 +37,18 @@ class MiraCrownTask(TaskTemplate):
         itt.wait_until_stable(0.95)
         AreaMiraCrownEntrance.click()
         if wait_until_appear_then_click(ButtonMiraCrownQuickReward):
+            itt.delay(2, comment="等待奖励弹出")
             skip_get_award()
+            self.is_quick_reward = True
     
     @register_step("进入挑战")
     def step3(self):
         itt.wait_until_stable(0.95)
-        AreaMiraCrownThirdDoor.click()
+        # 如果是快速奖励进来的，要从第二个门进去（第三个门是锁住的），不然从第三个门进去
+        if not self.is_quick_reward:
+            AreaMiraCrownThirdDoor.click()
+        else:
+            AreaMiraCrownSecondDoor.click()
         itt.wait_until_stable(0.95)
         itt.move_to((0, 0)) # 移走鼠标，避免触发某些ui的悬停效果，影响识别
         if wait_until_appear_then_click(ButtonMiraCrownStartChallenge):
@@ -72,7 +79,7 @@ class MiraCrownTask(TaskTemplate):
         itt.delay(0.5, comment="等待对话选项弹出")
         if not scroll_find_click(AreaDialogSelection, "继续挑战", need_scroll=False):
             if not scroll_find_click(AreaDialogSelection, "开始挑战", need_scroll=False):
-                raise Exception("未找到对话选项：开始挑战或继续挑战")
+                return "step6"
         skip_dialog()
         return
         
