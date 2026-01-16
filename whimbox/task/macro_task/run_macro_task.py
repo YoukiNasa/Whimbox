@@ -5,6 +5,8 @@ from whimbox.common.logger import logger
 import time
 from whimbox.common.scripts_manager import *
 from whimbox.common.handle_lib import HANDLE_OBJ
+from whimbox.ui.ui import ui_control
+from whimbox.ui.page_assets import *
 
 
 class RunMacroTask(TaskTemplate):
@@ -52,6 +54,12 @@ class RunMacroTask(TaskTemplate):
                         itt.move_to(step.position)
                         itt.key_up(step.key)
                         self.pressing_keys.discard(step.key)
+            
+            elif step.type == "wait_game_page":
+                # 等待某个特定游戏页面
+                if step.target_game_page == "page_main":
+                    while not page_main.is_current_page(itt):
+                        time.sleep(0.1)
                     
         except Exception as e:
             logger.error(f"执行步骤失败: {e}, step: {step}")
