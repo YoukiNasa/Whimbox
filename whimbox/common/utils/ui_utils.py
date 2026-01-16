@@ -14,7 +14,7 @@ import time
 from whimbox.common.logger import logger
 
 
-def find_game_img(game_img: GameImg, cap, threshold, scale=0.5):
+def find_game_img(game_img: GameImg, cap, threshold, scale=0.5, count=1):
     # 准备需要匹配的两张图片
     template = game_img.raw_image
     if template.shape[2] == 4:
@@ -41,30 +41,98 @@ def find_game_img(game_img: GameImg, cap, threshold, scale=0.5):
     # 模板匹配
     res = cv2.matchTemplate(cap, template_rgb, cv2.TM_CCOEFF_NORMED, mask=mask)
 
-
-    # 找到最大匹配位置
-    _, max_val, _, max_loc = cv2.minMaxLoc(res)
-
     th, tw = template_rgb.shape[:2]
-    top_left = max_loc
-    bottom_right = (top_left[0] + tw, top_left[1] + th)
 
-    if max_val >= threshold:
-        logger.trace('imgname: ' + game_img.name + ' matching_rate: ' + str(max_val))
+    # 如果只需要找一个目标，使用原有逻辑
+    if count == 1:
+        # 找到最大匹配位置
+        _, max_val, _, max_loc = cv2.minMaxLoc(res)
 
-    if CV_DEBUG_MODE:
-        # 在目标图上绘制矩形
-        print(f"max_val: {max_val}, threshold: {threshold}")
-        cap_copy = cap.copy()
-        cv2.rectangle(cap_copy, top_left, bottom_right, (0,255,0), 3)
-        cv2.imshow("Detected", cap_copy)
-        cv2.waitKey(0)
+        top_left = max_loc
+        bottom_right = (top_left[0] + tw, top_left[1] + th)
+
+        if max_val >= threshold:
+            logger.trace('imgname: ' + game_img.name + ' matching_rate: ' + str(max_val))
+
+        if CV_DEBUG_MODE:
+            # 在目标图上绘制矩形
+            print(f"max_val: {max_val}, threshold: {threshold}")
+            cap_copy = cap.copy()
+            cv2.rectangle(cap_copy, top_left, bottom_right, (0,255,0), 3)
+            cv2.imshow("Detected", cap_copy)
+            cv2.waitKey(0)
+        
+        if max_val < threshold:
+            return None
+
+        box = [top_left[0], top_left[1], bottom_right[0], bottom_right[1]]
+        return box
     
-    if max_val < threshold:
-        return None
-
-    box = [top_left[0], top_left[1], bottom_right[0], bottom_right[1]]
-    return box
+    # 如果需要找多个目标，使用非极大值抑制
+    else:
+        # 找到所有超过阈值的位置
+        loc = np.where(res >= threshold)
+        
+        if len(loc[0]) == 0:
+            return None
+        
+        # 将位置和相似度组合
+        matches = []
+        for pt in zip(*loc[::-1]):  # loc[::-1]将(y,x)转换为(x,y)
+            matches.append({
+                'x': pt[0],
+                'y': pt[1],
+                'score': res[pt[1], pt[0]]
+            })
+        
+        # 按相似度降序排序
+        matches.sort(key=lambda x: x['score'], reverse=True)
+        
+        # 使用非极大值抑制来过滤重叠的检测框
+        boxes = []
+        for match in matches:
+            x, y = match['x'], match['y']
+            box = [x, y, x + tw, y + th]
+            
+            # 检查是否与已有的框重叠
+            is_overlap = False
+            for existing_box in boxes:
+                # 计算重叠区域
+                x1 = max(box[0], existing_box[0])
+                y1 = max(box[1], existing_box[1])
+                x2 = min(box[2], existing_box[2])
+                y2 = min(box[3], existing_box[3])
+                
+                if x1 < x2 and y1 < y2:
+                    # 有重叠，计算重叠面积占比
+                    overlap_area = (x2 - x1) * (y2 - y1)
+                    box_area = (box[2] - box[0]) * (box[3] - box[1])
+                    overlap_ratio = overlap_area / box_area
+                    
+                    # 如果重叠超过50%，认为是同一个目标
+                    if overlap_ratio > 0.5:
+                        is_overlap = True
+                        break
+            
+            if not is_overlap:
+                boxes.append(box)
+                logger.trace(f'imgname: {game_img.name} matching_rate: {match["score"]:.4f}')
+                
+                # 如果已经找到足够数量的目标，停止搜索
+                if len(boxes) >= count:
+                    break
+        
+        if CV_DEBUG_MODE:
+            # 在目标图上绘制所有找到的矩形
+            cap_copy = cap.copy()
+            for i, box in enumerate(boxes):
+                cv2.rectangle(cap_copy, (box[0], box[1]), (box[2], box[3]), (0, 255, 0), 3)
+                cv2.putText(cap_copy, str(i+1), (box[0], box[1]-5), 
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+            cv2.imshow("Detected Multiple", cap_copy)
+            cv2.waitKey(0)
+        
+        return boxes
 
 
 def scroll_find_click(area: Area, target, threshold=0, hsv_limit=None, scale=0, str_match_mode=0, click_offset=(0, 0), need_scroll=True) -> bool:
@@ -308,6 +376,7 @@ if __name__ == "__main__":
 
     # scroll_find_click(AreaBlessHuanjingLevelsSelect, "翻滚", str_match_mode=1)
     # scroll_find_click(AreaEscEntrances, "美鸭梨挖掘")
-    scroll_find_click(AreaItemQuickList, IconItemPlaceable, scale=1.05, threshold=IconItemPlaceable.threshold, need_scroll=False)
+    cap = cv2.imread(r"D:\workspaces\python\Whimbox\tools\snapshot\1768526354.406669.png")
+    print(find_game_img(GameImgStarCrystal, cap, threshold=0.70, scale=1, count=3))
 
     

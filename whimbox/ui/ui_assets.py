@@ -3,6 +3,7 @@ from whimbox.ui.template.button_manager import Button
 from whimbox.ui.template.posi_manager import Area
 from whimbox.ui.template.text_manager import Text
 from whimbox.common.cvars import *
+from whimbox.ui.template.img_manager import GameImg
 
 # 很多界面左上角都有的文字标题区域
 AreaPageTitleFeature = Area(anchor=ANCHOR_TOP_LEFT)
@@ -142,6 +143,7 @@ TextChangeMusic = Text("更改音乐", cap_area = AreaPickup)
 TextTransAnimal = Text("变身", cap_area = AreaPickup)
 ButtonXhsgBottleClose = Button(print_log=LOG_WHEN_TRUE, anchor=ANCHOR_CENTER)
 TextDeliveryBottle = Text("投递", cap_area = AreaPickup)
+GameImgStarCrystal = GameImg(name="T_UI_map_img_icon_star_02")
 
 # 换装界面
 ButtonWardrobeDressDIY = Button(print_log=LOG_WHEN_TRUE, anchor=ANCHOR_LEFT_CENTER)
