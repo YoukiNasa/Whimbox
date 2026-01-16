@@ -101,7 +101,7 @@ class ZhaoxiTask(TaskTemplate):
     def step1(self):
         ui_control.goto_page(page_zxxy)
         itt.delay(1, comment="等待页面稳定")
-        itt.wait_until_stable(threshold=0.95)
+        itt.wait_until_stable(threshold=0.98)
         try:
             score_str = itt.ocr_single_line(AreaZxxyScore, hsv_limit=([0, 0, 250], [0, 0, 255]))
             score = int(score_str.strip())
@@ -226,6 +226,7 @@ class ZhaoxiTask(TaskTemplate):
     def step5(self):
         ui_control.goto_page(page_zxxy)
         itt.delay(1, comment="等待页面稳定")
+        itt.wait_until_stable(threshold=0.98)
         if not itt.get_img_existence(ButtonZxxyRewarded):
             ButtonZxxyRewarded.click()
             if skip_get_award():

@@ -154,7 +154,7 @@ class XinghaiTask(TaskTemplate):
     def step2(self):
         ui_control.goto_page(page_xhsg)
         itt.delay(1, comment="等待页面稳定")
-        itt.wait_until_stable(threshold=0.95)
+        itt.wait_until_stable(threshold=0.98)
         try:
             score_str = itt.ocr_single_line(AreaXhsgScore, hsv_limit=([0, 0, 250], [0, 0, 255]))
             score = int(score_str.strip())
@@ -250,6 +250,7 @@ class XinghaiTask(TaskTemplate):
     def step5(self):
         ui_control.goto_page(page_xhsg)
         itt.delay(1, comment="等待页面稳定")
+        itt.wait_until_stable(threshold=0.98)
         if not itt.get_img_existence(ButtonXhsgRewarded):
             ButtonXhsgRewarded.click()
             if skip_get_award():
