@@ -103,6 +103,22 @@ class Map(MiniMap, BigMap):
             self.history_position_list.pop(0)
         return list(r_posi)
 
+    def check_stuck(self):
+        """检查角色是否卡住（历史位置都在同一地点附近）
+        """
+        if len(self.history_position_list) < 20:
+            return False
+        
+        # 使用第一个位置作为参考点
+        reference_pos = self.history_position_list[0]
+        
+        # 检查所有位置是否都在参考点的2px范围内
+        for pos in self.history_position_list:
+            if euclidean_distance(reference_pos, pos) > 2:
+                return False
+        
+        return True
+
 
     def update_region_and_map_name(self, use_cache=False) -> str:
         if use_cache and self.region_name is not None and self.map_name is not None:
@@ -185,12 +201,13 @@ class Map(MiniMap, BigMap):
             time.sleep(0.5)
             times -= 1
 
-    def get_bigmap_posi(self, is_upd=True) -> t.Tuple[float, float]:
+    def get_bigmap_posi(self, is_upd=True, is_log=False) -> t.Tuple[float, float]:
         self.maximize_bigmap_scale()
         if is_upd:
             area = AnchorPosi(0, 0, 1920, 1080)
             self.update_bigmap(itt.capture(anchor_posi=area))
-        logger.debug(f"bigmap px posi: {self.bigmap_position}")
+        if is_log:
+            logger.debug(f"bigmap px posi: {self.bigmap_position}")
         return self.bigmap_position
 
     def _move_bigmap(self, target_posi, float_posi=0, force_center=False) -> list:
@@ -250,10 +267,11 @@ class Map(MiniMap, BigMap):
         if euclidean_distance(after_move_posi, target_posi) <= self.BIGMAP_TP_OFFSET:
             return list([screen_center_x, screen_center_y])  # screen center
         else:
-            if euclidean_distance(after_move_posi, curr_posi) <= self.BIGMAP_TP_OFFSET:
-                return self._move_bigmap(target_posi=target_posi, float_posi=float_posi + 45)
-            else:
-                return self._move_bigmap(target_posi=target_posi)
+            # if euclidean_distance(after_move_posi, curr_posi) <= self.BIGMAP_TP_OFFSET:
+            #     return self._move_bigmap(target_posi=target_posi, float_posi=float_posi + 45)
+            # else:
+            #     return self._move_bigmap(target_posi=target_posi)
+            return self._move_bigmap(target_posi=target_posi)
 
     def find_closest_teleporter(self, posi: list, map_name: str):
         """

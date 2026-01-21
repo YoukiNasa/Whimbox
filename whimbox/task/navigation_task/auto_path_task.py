@@ -159,6 +159,8 @@ class AutoPathTask(TaskTemplate):
             if self.need_stop():
                 break
             self.inner_step_control_move()
+            if nikki_map.check_stuck():
+                raise Exception("卡在某个地方了")
             time.sleep(self.step_sleep)
             self.once_loop_time = time.time() - start_time
         return "step2"
