@@ -17,12 +17,12 @@ page_daily_reward_1 = UIPage(check_icon=IconDailyRewardFeature1)
 page_daily_reward_2 = UIPage(check_icon=IconDailyRewardFeature2)
 page_shop = UIPage(check_icon=IconShopFeature)
 page_gacha = UIPage(check_icon=IconGachaFeature)
+page_photo = UIPage(check_icon=IconPhotoFeature)
 page_huanjing = TitlePage("幻境挑战")
 page_huanjing_jihua = TitlePage("素材激化幻境")
 page_huanjing_bless = TitlePage("祝福闪光幻境")
 page_huanjing_monster = TitlePage("魔物试炼幻境")
 page_huanjing_weekly = TitlePage("心之突破幻境")
-page_photo = TitlePage("大喵相机")
 page_monthly_pass = TitlePage("奇迹之旅")
 page_event = TitlePage("活动大厅")
 page_setting = TitlePage("设置")
@@ -35,12 +35,12 @@ ui_pages = [
     page_zxxy,
     page_xhsg,
     page_esc,
+    page_photo,
     page_huanjing,
     page_huanjing_jihua,
     page_huanjing_bless,
     page_huanjing_monster,
     page_huanjing_weekly,
-    page_photo,
     page_monthly_pass,
     page_event,
     page_setting,
