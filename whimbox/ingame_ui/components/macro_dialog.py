@@ -21,6 +21,7 @@ class MacroSelectionDialog(QDialog):
         
         # 搜索条件
         self.filter_name = None
+        self.show_default = False
         
         self.init_ui()
         self.load_macros()
@@ -93,8 +94,32 @@ class MacroSelectionDialog(QDialog):
         filter_row2.setSpacing(8)
         filter_row2.addStretch()
 
-        subscribe_button = QPushButton("🌐 前往宏订阅网站" if not self.is_play_music else "🌐 前往乐谱订阅网站")
-        subscribe_button.setFixedSize(120, 24)
+        if not self.is_play_music:
+            self.show_default_button = QPushButton("显示一条龙宏")
+            self.show_default_button.setFixedSize(100, 24)
+            self.show_default_button.clicked.connect(self.show_default_button_clicked)
+            self.show_default_button.setStyleSheet("""
+                QPushButton {
+                    background-color: #2196F3;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    font-size: 8pt;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background-color: #1976D2;
+                }
+                QPushButton:pressed {
+                    background-color: #1565C0;
+                }
+            """)
+            filter_row2.addWidget(self.show_default_button)
+        else:
+            self.show_default_button = None
+
+        subscribe_button = QPushButton("前往宏订阅网站" if not self.is_play_music else "前往乐谱订阅网站")
+        subscribe_button.setFixedSize(100, 24)
         subscribe_button.clicked.connect(self.open_subscribe_page)
         subscribe_button.setStyleSheet("""
             QPushButton {
@@ -114,8 +139,8 @@ class MacroSelectionDialog(QDialog):
         """)
         filter_row2.addWidget(subscribe_button)
 
-        open_folder_button = QPushButton("📁 打开宏文件夹" if not self.is_play_music else "📁 打开乐谱文件夹")
-        open_folder_button.setFixedSize(120, 24)
+        open_folder_button = QPushButton("打开宏文件夹" if not self.is_play_music else "打开乐谱文件夹")
+        open_folder_button.setFixedSize(100, 24)
         open_folder_button.clicked.connect(self.open_macro_folder)
         open_folder_button.setStyleSheet("""
             QPushButton {
@@ -135,8 +160,8 @@ class MacroSelectionDialog(QDialog):
         """)
         filter_row2.addWidget(open_folder_button)
         
-        refresh_button = QPushButton("🔄 刷新宏" if not self.is_play_music else "🔄 刷新乐谱")
-        refresh_button.setFixedSize(120, 24)
+        refresh_button = QPushButton("刷新宏" if not self.is_play_music else "刷新乐谱")
+        refresh_button.setFixedSize(100, 24)
         refresh_button.clicked.connect(self.reload_macros)
         refresh_button.setStyleSheet("""
             QPushButton {
@@ -156,8 +181,8 @@ class MacroSelectionDialog(QDialog):
         """)
         filter_row2.addWidget(refresh_button)
         
-        reset_button = QPushButton("🗑️ 重置筛选")
-        reset_button.setFixedSize(120, 24)
+        reset_button = QPushButton("重置筛选")
+        reset_button.setFixedSize(100, 24)
         reset_button.clicked.connect(self.reset_filters)
         reset_button.setStyleSheet("""
             QPushButton {
@@ -344,6 +369,17 @@ class MacroSelectionDialog(QDialog):
         if not res:
             QMessageBox.warning(self, "提示", msg)
     
+    def show_default_button_clicked(self):
+        """显示一条龙宏"""
+        if not self.is_play_music:
+            if self.show_default:
+                self.show_default = False
+                self.show_default_button.setText("显示一条龙宏")
+            else:
+                self.show_default = True
+                self.show_default_button.setText("隐藏一条龙宏")
+            self.load_macros()
+
     def open_subscribe_page(self):
         try:
             webbrowser.open("https://nikkigallery.vip/whimbox/scripts")
@@ -365,7 +401,7 @@ class MacroSelectionDialog(QDialog):
             name = self.filter_name if self.filter_name else None
             
             # 查询宏
-            macros = scripts_manager.query_macro(name=name, is_play_music=self.is_play_music, return_one=False)
+            macros = scripts_manager.query_macro(name=name, is_play_music=self.is_play_music, return_one=False, show_default=self.show_default)
             
             # 清空表格
             self.macro_list.setRowCount(0)
