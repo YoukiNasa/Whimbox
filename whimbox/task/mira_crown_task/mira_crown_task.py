@@ -36,6 +36,7 @@ class MiraCrownTask(TaskTemplate):
         AreaMiraCrownOverview.click()
         itt.wait_until_stable(0.95)
         AreaMiraCrownEntrance.click()
+        itt.delay(3, comment="等待巅峰赛跳关结束")
         if wait_until_appear_then_click(ButtonMiraCrownQuickReward):
             itt.delay(5, comment="等待奖励弹出")
             skip_get_award()
