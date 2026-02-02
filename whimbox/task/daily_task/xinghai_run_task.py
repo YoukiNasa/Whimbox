@@ -100,6 +100,7 @@ class XinghaiRunTask(TaskTemplate):
             "星海拾光_星光结晶收集_晶簇之谷": (2224.8, 1521.2),
             "星海拾光_星光结晶收集_大舞台": (3282.8, 2437.6),
             "星海拾光_星光结晶收集_繁星之滨": (2471.6, 1680.8),
+            "星海拾光_星光结晶收集_繁星之滨2": (2380, 1605),
         }
         for path_name, loc in auto_path_dict.items():
             if euclidean_distance(self.target_loc, loc) < 20:
