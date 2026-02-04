@@ -1,11 +1,15 @@
 import asyncio
 import json
+import os
 from typing import Any, Dict, Optional, Set
 
 import websockets
 
 from whimbox.common.cvars import RPC_CONFIG
 from whimbox.common.logger import logger
+from whimbox.common.path_lib import ASSETS_PATH
+from whimbox.config.default_config import DEFAULT_CONFIG
+from whimbox.config.config import global_config
 from whimbox.mcp_agent import mcp_agent
 from whimbox.plugin_runtime import get_registry, init_plugins, get_loaded_plugins, get_plugins_version
 from whimbox.session_manager import session_manager
@@ -14,6 +18,8 @@ from whimbox.task_manager import task_manager
 
 _clients: Set[Any] = set()
 _loop: Optional[asyncio.AbstractEventLoop] = None
+_setting_options_cache: Optional[Dict[str, Any]] = None
+_material_options_cache: Optional[list[str]] = None
 
 
 async def _broadcast(method: str, params: Dict[str, Any]) -> None:
@@ -52,6 +58,77 @@ def _notify(method: str, params: Dict[str, Any]) -> None:
 
 def notify_event(method: str, params: Dict[str, Any]) -> None:
     _notify(method, params)
+
+
+def _load_setting_options() -> Dict[str, Any]:
+    global _setting_options_cache
+    if _setting_options_cache is not None:
+        return _setting_options_cache
+    try:
+        path = os.path.join(ASSETS_PATH, "setting_options.json")
+        with open(path, "r", encoding="utf-8") as f:
+            _setting_options_cache = json.load(f)
+    except Exception:
+        _setting_options_cache = {}
+    return _setting_options_cache
+
+
+def _load_material_options() -> list[str]:
+    global _material_options_cache
+    if _material_options_cache is not None:
+        return _material_options_cache
+    try:
+        path = os.path.join(ASSETS_PATH, "material.json")
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        _material_options_cache = list(data.keys())
+    except Exception:
+        _material_options_cache = []
+    return _material_options_cache
+
+
+def _infer_config_type(value: Any) -> str:
+    if isinstance(value, bool):
+        return "boolean"
+    if isinstance(value, (int, float)):
+        return "number"
+    if isinstance(value, str):
+        lowered = value.lower()
+        if lowered in ("true", "false"):
+            return "boolean"
+        numeric = value.replace(".", "", 1).replace("-", "", 1)
+        if numeric.isdigit():
+            return "number"
+    return "string"
+
+
+def _split_config_path(path: str) -> list[str]:
+    if not isinstance(path, str) or not path.strip():
+        raise ValueError("path is required")
+    return [part for part in path.split(".") if part]
+
+
+def _get_config_value(path: str) -> Any:
+    parts = _split_config_path(path)
+    if len(parts) == 1:
+        section = global_config.config.get(parts[0])
+        if section is None:
+            raise ValueError(f"config section not found: {parts[0]}")
+        return section
+    if len(parts) == 2:
+        section = global_config.config.get(parts[0]) or {}
+        if parts[1] not in section:
+            raise ValueError(f"config key not found: {path}")
+        return section.get(parts[1])
+    raise ValueError("path must be in 'Section' or 'Section.key' format")
+
+
+def _apply_config_update(path: str, value: Any) -> None:
+    parts = _split_config_path(path)
+    if len(parts) != 2:
+        raise ValueError("update path must be in 'Section.key' format")
+    section, key = parts
+    global_config.set(section, key, value)
 
 
 def _result_response(request_id: Any, result: Any) -> Dict[str, Any]:
@@ -270,6 +347,47 @@ async def _dispatch(method: str, params: Dict[str, Any]) -> Any:
 
     if method == "health":
         return {"status": "ok"}
+
+    if method == "config.get":
+        path = params.get("path", "Game")
+        value = _get_config_value(path)
+        return {"path": path, "value": value}
+
+    if method == "config.meta":
+        section = params.get("section", "Game")
+        if section not in DEFAULT_CONFIG:
+            raise ValueError(f"config section not found: {section}")
+        setting_options = _load_setting_options()
+        material_options = _load_material_options()
+        items = []
+        for key, item in DEFAULT_CONFIG.get(section, {}).items():
+            value = item.get("value")
+            meta_item = {
+                "key": key,
+                "description": item.get("description", ""),
+                "type": _infer_config_type(value),
+            }
+            if key in setting_options:
+                meta_item["options"] = setting_options.get(key, [])
+            if key in ("jihua_cost", "jihua_cost_2", "jihua_cost_3"):
+                meta_item["options"] = material_options
+            items.append(meta_item)
+        return {"section": section, "items": items}
+
+    if method == "config.update":
+        updates = params.get("updates")
+        if updates is not None:
+            if not isinstance(updates, list):
+                raise ValueError("updates must be a list")
+            for item in updates:
+                if not isinstance(item, dict):
+                    raise ValueError("update item must be object")
+                _apply_config_update(item.get("path"), item.get("value"))
+        else:
+            _apply_config_update(params.get("path"), params.get("value"))
+        if not global_config.save():
+            raise ValueError("config save failed")
+        return {"ok": True}
 
     if method == "plugin.reload":
         init_plugins(force_reload=True)
