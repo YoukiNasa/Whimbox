@@ -79,35 +79,38 @@ class ScriptsManager:
     def init_scripts_dict(self):
         self.path_dict = {}
         self.macro_dict = {}
-        for file in os.listdir(SCRIPT_PATH):
-            if file.endswith(".json"):
-                with open(os.path.join(SCRIPT_PATH, file), "r", encoding="utf-8") as f:
-                    try:
-                        json_text = f.read()
-                        json_dict = json.loads(json_text)
-                        if json_dict['info']['type'] == '宏' or json_dict['info']['type'] == '乐谱':
-                            macro_record = MacroRecord.model_validate_json(json_text)
-                            macro_name = macro_record.info.name
-                            if macro_name in self.macro_dict:
-                                if self.macro_dict[macro_name].info.update_time < macro_record.info.update_time:
+        # 使用 os.walk 递归遍历所有子文件夹
+        for root, dirs, files in os.walk(SCRIPT_PATH):
+            for file in files:
+                if file.endswith(".json"):
+                    file_path = os.path.join(root, file)
+                    with open(file_path, "r", encoding="utf-8") as f:
+                        try:
+                            json_text = f.read()
+                            json_dict = json.loads(json_text)
+                            if json_dict['info']['type'] == '宏' or json_dict['info']['type'] == '乐谱':
+                                macro_record = MacroRecord.model_validate_json(json_text)
+                                macro_name = macro_record.info.name
+                                if macro_name in self.macro_dict:
+                                    if self.macro_dict[macro_name].info.update_time < macro_record.info.update_time:
+                                        self.macro_dict[macro_name] = macro_record
+                                    else:
+                                        continue
+                                else:
                                     self.macro_dict[macro_name] = macro_record
-                                else:
-                                    continue
                             else:
-                                self.macro_dict[macro_name] = macro_record
-                        else:
-                            path_record = PathRecord.model_validate_json(json_text)
-                            path_name = path_record.info.name
-                            if path_name in self.path_dict:
-                                if self.path_dict[path_name].info.update_time < path_record.info.update_time:
+                                path_record = PathRecord.model_validate_json(json_text)
+                                path_name = path_record.info.name
+                                if path_name in self.path_dict:
+                                    if self.path_dict[path_name].info.update_time < path_record.info.update_time:
+                                        self.path_dict[path_name] = path_record
+                                    else:
+                                        continue
+                                else:
                                     self.path_dict[path_name] = path_record
-                                else:
-                                    continue
-                            else:
-                                self.path_dict[path_name] = path_record
-                    except Exception as e:
-                        logger.error(f"读取脚本文件{file}失败: {e}")
-                        continue
+                        except Exception as e:
+                            logger.error(f"读取脚本文件{file_path}失败: {e}")
+                            continue
 
     def query_path(self, path_name=None, target=None, type=None, count=None, return_one=False, show_default=False) -> list[PathRecord] | PathRecord | None:
         # 指定名字就直接返回单文件（用于内部固定路线的任务使用，比如每日任务）
