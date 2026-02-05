@@ -55,7 +55,7 @@ class XinghaiRunTask(TaskTemplate):
                     boxes.sort(key=lambda x: x[1])
                     box = boxes[1]
                 else:
-                    box = box[0]
+                    box = boxes[0]
                 itt.move_and_click(area_center(box))
                 itt.wait_until_stable(threshold=0.9995)
         else:
@@ -65,7 +65,11 @@ class XinghaiRunTask(TaskTemplate):
                 logger.info("没找到星光结晶，可能被右上角ui覆盖无法识别，移动地图到右上角")
                 move_map_to_right_top_corner()
             else:
-                logger.info("星光结晶就在当前画面，不需要任何操作")
+                if 1500 < box[0] and box[1] < 400:
+                    logger.info("星光结晶在右上角，可能被右上角ui覆盖无法点击，移动地图到右上角")
+                    move_map_to_right_top_corner()
+                else:
+                    logger.info("星光结晶就在当前画面，不需要任何操作")
         # 移动地图后，再次识别当前地图画面的结晶
         boxes = find_game_img(GameImgStarCrystal, itt.capture(), threshold=0.70, scale=1, count=3)
 
@@ -91,14 +95,14 @@ class XinghaiRunTask(TaskTemplate):
         auto_path_dict = {
             "星海拾光_星光结晶收集_星梦群屿": (2878.8, 2164.0),
             "星海拾光_星光结晶收集_泡泡梦屿": (3088.0, 1895.7),
-            "星海拾光_星光结晶收集_泡泡梦屿2": (3183.2, 1931.6),
-            "星海拾光_星光结晶收集_无界枢纽": (1694.0, 2002.0),
-            "星海拾光_星光结晶收集_晶簇之谷": (2224.8, 1521.2),
+            "星海拾光_星光结晶收集_泡泡梦屿2": (3140, 1960),
+            "星海拾光_星光结晶收集_无界枢纽": (1667.0, 2030.0),
+            "星海拾光_星光结晶收集_晶簇之谷": (2248.0, 1480.0),
             "星海拾光_星光结晶收集_大舞台": (3282.8, 2437.6),
             "星海拾光_星光结晶收集_繁星之滨": (2471.6, 1680.8),
         }
         for path_name, loc in auto_path_dict.items():
-            if euclidean_distance(self.target_loc, loc) < 20:
+            if euclidean_distance(self.target_loc, loc) < 30:
                 auto_path_task = AutoPathTask(path_name=path_name)
                 task_result = auto_path_task.task_run()
                 if task_result.status == STATE_TYPE_SUCCESS:
