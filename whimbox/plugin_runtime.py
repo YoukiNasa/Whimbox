@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from plugins import PluginRegistry, load_plugins
+from whimbox.plugins import PluginRegistry, load_plugins
 from whimbox.common.logger import logger
 from whimbox.common.path_lib import PLUGINS_PATH
 

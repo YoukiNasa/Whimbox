@@ -4,7 +4,7 @@ from langchain_core.tools import StructuredTool
 from pydantic import Field, create_model
 from typing_extensions import Literal
 
-from plugins.registry import PluginRegistry
+from whimbox.plugins.registry import PluginRegistry
 
 
 def _json_type_to_py(schema: Dict[str, Any]) -> Type[Any]:
