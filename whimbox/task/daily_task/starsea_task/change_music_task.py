@@ -1,11 +1,11 @@
-from whimbox.task.task_template import *
+﻿from whimbox.task.task_template import *
 from whimbox.interaction.interaction_core import itt
 from whimbox.common.utils.ui_utils import*
 from whimbox.ui.ui_assets import *
 
 class ChangeMusicTask(TaskTemplate):
-    def __init__(self):
-        super().__init__("change_music_task")
+    def __init__(self, session_id):
+        super().__init__(session_id=session_id, name="change_music_task")
     
     @register_step("更改音乐")
     def step1(self):

@@ -54,8 +54,11 @@ class TaskResult:
         return f"{{'status': {self.status}, 'message': {self.message}}}"
 
 class TaskTemplate:
-    def __init__(self, name=""):
+    def __init__(self, *, session_id: str, name: str = ""):
+        if not session_id:
+            raise ValueError(f"{self.__class__.__name__} requires non-empty session_id")
         self.name = name
+        self.session_id = session_id
         
         # 尝试从 context 获取父任务的 stop_flag
         stop_flag = current_stop_flag.get()
@@ -249,6 +252,15 @@ class TaskTemplate:
         '''如果子类有自己额外的停止代码，就实现这个方法，并调用父类的这个方法'''
         if not self.stop_flag.is_set():
             self.stop_flag.set()
+            from whimbox.rpc_server import notify_event
+            notify_event(
+                "event.agent.status",
+                {
+                    "session_id": self.session_id,
+                    "status": "on_tool_stopping",
+                    "detail": "manual_stop",
+                },
+            )
         self.update_task_result(status=STATE_TYPE_STOP, message=message or "停止任务", data=data)
         logger.info(f"停止任务: {self.name}")
 
@@ -274,21 +286,17 @@ class TaskTemplate:
             msg = f"❌ {msg}"
             level = "error"
 
-        from whimbox.common.cvars import get_current_session_id
         from whimbox.rpc_server import notify_event
         from whimbox.ingame_ui.ingame_ui import win_ingame_ui
 
-        session_id = get_current_session_id()
-        notify_event(
-            "event.task.log",
-            {
-                "session_id": session_id,
-                "message": msg,
-                "raw_message": raw_message,
-                "level": level,
-                "type": type,
-            },
-        )
+        payload = {
+            "session_id": self.session_id,
+            "message": msg,
+            "raw_message": raw_message,
+            "level": level,
+            "type": type,
+        }
+        notify_event("event.task.log", payload)
         if win_ingame_ui:
             win_ingame_ui.update_message(msg, type)
         logger.info(msg)

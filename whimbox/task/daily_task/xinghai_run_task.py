@@ -1,4 +1,4 @@
-from whimbox.task.task_template import *
+﻿from whimbox.task.task_template import *
 from whimbox.interaction.interaction_core import itt
 from whimbox.ui.ui import ui_control
 from whimbox.ui.page_assets import *
@@ -10,8 +10,8 @@ from whimbox.common.utils.ui_utils import *
 from whimbox.task.navigation_task.auto_path_task import AutoPathTask
 
 class XinghaiRunTask(TaskTemplate):
-    def __init__(self):
-        super().__init__("xinghai_run_task")
+    def __init__(self, session_id):
+        super().__init__(session_id=session_id, name="xinghai_run_task")
         self.target_loc = None
 
     @register_step("传送到星海无界枢纽")
@@ -103,7 +103,7 @@ class XinghaiRunTask(TaskTemplate):
         }
         for path_name, loc in auto_path_dict.items():
             if euclidean_distance(self.target_loc, loc) < 30:
-                auto_path_task = AutoPathTask(path_name=path_name)
+                auto_path_task = AutoPathTask(session_id=self.session_id, path_name=path_name)
                 task_result = auto_path_task.task_run()
                 if task_result.status == STATE_TYPE_SUCCESS:
                     self.update_task_result(status=STATE_TYPE_SUCCESS, message="收集星光结晶成功")
@@ -113,7 +113,7 @@ class XinghaiRunTask(TaskTemplate):
         self.update_task_result(status=STATE_TYPE_FAILED, message="暂时没有这条收集路线，等俺更新~")
 
 if __name__ == "__main__":
-    task = XinghaiRunTask()
+    task = XinghaiRunTask(session_id="debug")
     print(task.task_run())
         
         

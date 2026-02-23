@@ -1,12 +1,12 @@
-from whimbox.task.task_template import TaskTemplate, register_step
+﻿from whimbox.task.task_template import TaskTemplate, register_step
 from whimbox.ui.ui import ui_control
 from whimbox.ui.page_assets import *
 from whimbox.interaction.interaction_core import itt
 from whimbox.common.utils.ui_utils import wait_until_appear, wait_until_appear_then_click
 
 class DailyPhotoTask(TaskTemplate):
-    def __init__(self):
-        super().__init__("daily_photo_task")
+    def __init__(self, session_id):
+        super().__init__(session_id=session_id, name="daily_photo_task")
 
     @register_step("前往拍照界面")
     def step1(self):
@@ -31,7 +31,8 @@ class DailyPhotoTask(TaskTemplate):
         ui_control.goto_page(page_main)
 
 if __name__ == "__main__":
-    daily_photo_task = DailyPhotoTask()
+    daily_photo_task = DailyPhotoTask(session_id="debug")
     daily_photo_task.task_run()
     print(daily_photo_task.task_result)
     # ui_control.goto_page(page_photo)
+

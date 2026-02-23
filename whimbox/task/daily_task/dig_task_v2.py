@@ -1,4 +1,4 @@
-"""
+﻿"""
 美鸭梨挖掘
 """
 
@@ -9,8 +9,8 @@ from whimbox.interaction.interaction_core import itt
 from whimbox.common.utils.ui_utils import *
 
 class DigTaskV2(TaskTemplate):
-    def __init__(self):
-        super().__init__("dig_task_v2")
+    def __init__(self, session_id):
+        super().__init__(session_id=session_id, name="dig_task_v2")
     
     @register_step("正在前往美鸭梨挖掘")
     def step1(self):
@@ -52,5 +52,5 @@ class DigTaskV2(TaskTemplate):
         back_to_page_main()
 
 if __name__ == "__main__":
-    dig_task = DigTaskV2()
+    dig_task = DigTaskV2(session_id="debug")
     dig_task.task_run()

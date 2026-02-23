@@ -68,7 +68,7 @@ def run_one_dragon():
 
     from whimbox.task.daily_task.all_in_one_task import AllInOneTask
     logger.info("开始执行一条龙任务...")
-    task = AllInOneTask()
+    task = AllInOneTask(session_id="debug")
     task_result = task.task_run()
     logger.info(f"一条龙任务完成: {task_result.message}")
     logger.info("任务结束，程序退出")

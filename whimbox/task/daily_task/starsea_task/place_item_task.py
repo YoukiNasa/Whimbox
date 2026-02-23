@@ -1,12 +1,12 @@
-from whimbox.common.utils.ui_utils import *
+﻿from whimbox.common.utils.ui_utils import *
 from whimbox.task.task_template import *
 from whimbox.interaction.interaction_core import itt
 from whimbox.ui.ui_assets import *
 from whimbox.common.keybind import keybind
 
 class PlaceItemTask(TaskTemplate):
-    def __init__(self):
-        super().__init__("place_item_task")
+    def __init__(self, session_id):
+        super().__init__(session_id=session_id, name="place_item_task")
         self.chose_lantern = False
 
     @register_step("选择摆饰")
@@ -82,6 +82,7 @@ class PlaceItemTask(TaskTemplate):
 
 
 if __name__ == "__main__":
-    task = PlaceItemTask()
+    task = PlaceItemTask(session_id="debug")
     result = task.task_run()
     print(result)
+

@@ -1,4 +1,4 @@
-'''魔物试炼幻境'''
+﻿'''魔物试炼幻境'''
 from whimbox.task.task_template import *
 from whimbox.ui.ui import ui_control
 from whimbox.ui.page_assets import *
@@ -7,8 +7,8 @@ from whimbox.common.cvars import DEBUG_MODE
 from whimbox.config.config import global_config
 
 class MonsterTask(TaskTemplate):
-    def __init__(self, level_name=None):
-        super().__init__("monster_task")
+    def __init__(self, session_id, level_name=None):
+        super().__init__(session_id=session_id, name="monster_task")
         if not level_name:
             self.level_name = global_config.get("Game", "monster_target")
         else:
@@ -64,7 +64,9 @@ class MonsterTask(TaskTemplate):
 
 
 if __name__ == "__main__":
-    monster_task = MonsterTask()
+    monster_task = MonsterTask(session_id="debug")
     monster_task.task_run()
         
+
+
 

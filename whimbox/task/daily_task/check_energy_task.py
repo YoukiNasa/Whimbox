@@ -1,11 +1,11 @@
-from whimbox.task.task_template import *
+﻿from whimbox.task.task_template import *
 from whimbox.ui.ui import ui_control
 from whimbox.ui.page_assets import *
 from whimbox.interaction.interaction_core import itt
 
 class CheckEnergyTask(TaskTemplate):
-    def __init__(self, need_cost_energy=0):
-        super().__init__("check_energy_task")
+    def __init__(self, session_id, need_cost_energy=0):
+        super().__init__(session_id=session_id, name="check_energy_task")
         self.need_cost_energy = need_cost_energy
 
     @register_step("检查体力")

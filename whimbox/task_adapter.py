@@ -15,16 +15,17 @@ class TaskAdapter:
         context = context or {}
         stop_event = context.get("stop_event")
 
-        task = task_cls(**input_data)
+        resolved_session_id = session_id or "default"
+        task = task_cls(session_id=resolved_session_id, **input_data)
         if stop_event is not None:
             task.stop_flag = stop_event
             current_stop_flag.set(stop_event)
 
-        current_session_id.set(session_id or "default")
+        current_session_id.set(resolved_session_id)
 
         result = task.task_run()
         if isinstance(result, TaskResult):
             return result.to_dict()
         if hasattr(result, "to_dict"):
             return result.to_dict()
-        return {"status": "success", "message": str(result), "session_id": session_id}
+        return {"status": "success", "message": str(result), "session_id": resolved_session_id}

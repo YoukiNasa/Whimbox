@@ -1,4 +1,4 @@
-import time
+﻿import time
 from enum import Enum
 import re
 
@@ -44,8 +44,8 @@ FISHING_TYPE_MIRALAND = "钓鱼"
 FISHING_TYPE_HOME = "钓陨星"
 
 class FishingTask(TaskTemplate):
-    def __init__(self):
-        super().__init__("fishing_task")
+    def __init__(self, session_id):
+        super().__init__(session_id=session_id, name="fishing_task")
         self.fishing_type = None # 大世界钓鱼or家园钓星
         self.material_count_dict = {}
 
@@ -266,9 +266,10 @@ class FishingTask(TaskTemplate):
 
 if __name__ == "__main__":
     # # CV_DEBUG_MODE = True
-    task = FishingTask()
+    task = FishingTask(session_id="debug")
     # task.task_run()
     from whimbox.common.utils.img_utils import IMG_RATE
     while True:
         time.sleep(1)
         print(task.get_fishing_type())
+

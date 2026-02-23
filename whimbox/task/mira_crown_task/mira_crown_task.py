@@ -1,4 +1,4 @@
-'''奇迹之冠'''
+﻿'''奇迹之冠'''
 from whimbox.common.utils.ui_utils import *
 from whimbox.task.task_template import *
 from whimbox.ui.ui import ui_control
@@ -9,8 +9,8 @@ from whimbox.interaction.interaction_core import itt
 import time
 
 class MiraCrownTask(TaskTemplate):
-    def __init__(self, force_start=False):
-        super().__init__("mira_crown_task")
+    def __init__(self, session_id, force_start=False):
+        super().__init__(session_id=session_id, name="mira_crown_task")
         self.force_start = force_start
         self.is_quick_reward = False
     
@@ -121,6 +121,7 @@ class MiraCrownTask(TaskTemplate):
 
 
 if __name__ == "__main__":
-    task = MiraCrownTask(force_start=True)
+    task = MiraCrownTask(session_id="debug", force_start=True)
     result = task.task_run()
     print(result.to_dict())
+

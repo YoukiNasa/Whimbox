@@ -1,4 +1,4 @@
-"""
+﻿"""
 路线记录（开发者工具）
 """
 
@@ -20,8 +20,8 @@ from whimbox.common.scripts_manager import *
 
 
 class RecordPathTask(TaskTemplate):
-    def __init__(self):
-        super().__init__("record_path_task")
+    def __init__(self, session_id):
+        super().__init__(session_id=session_id, name="record_path_task")
         self.step_sleep = 0.1
         self.min_gap = 2    # 路径点最小间隔距离
         self._lock = Lock()
@@ -180,5 +180,6 @@ def optimize_path(path_point_list):
 
 
 if __name__ == "__main__":
-    task = RecordPathTask()
+    task = RecordPathTask(session_id="debug")
     print(task.task_run())
+

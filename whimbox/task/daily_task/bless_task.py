@@ -1,4 +1,4 @@
-'''祝福闪光幻境'''
+﻿'''祝福闪光幻境'''
 from whimbox.task.task_template import STATE_TYPE_FAILED, STEP_NAME_FINISH, TaskTemplate, register_step
 from whimbox.ui.ui import ui_control
 from whimbox.ui.page_assets import *
@@ -9,8 +9,8 @@ from whimbox.config.config import global_config
 from whimbox.common.keybind import keybind
 
 class BlessTask(TaskTemplate):
-    def __init__(self, level_name=None):
-        super().__init__("bless_task")
+    def __init__(self, session_id, level_name=None):
+        super().__init__(session_id=session_id, name="bless_task")
         if not level_name:
             self.level_name = global_config.get("Game", "bless_target")
         else:
@@ -70,7 +70,9 @@ class BlessTask(TaskTemplate):
 
 
 if __name__ == "__main__":
-    bless_task = BlessTask()
+    bless_task = BlessTask(session_id="debug")
     bless_task.task_run()
         
+
+
 

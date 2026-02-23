@@ -1,4 +1,4 @@
-from whimbox.common.utils.ui_utils import wait_until_appear
+﻿from whimbox.common.utils.ui_utils import wait_until_appear
 from whimbox.task.task_template import *
 from whimbox.interaction.interaction_core import itt
 from whimbox.common.keybind import keybind
@@ -7,8 +7,8 @@ from whimbox.ui.ui_assets import *
 from whimbox.ui.page_assets import *
 
 class GroupChatTask(TaskTemplate):
-    def __init__(self):
-        super().__init__("group_chat_task")
+    def __init__(self, session_id):
+        super().__init__(session_id=session_id, name="group_chat_task")
     
     @register_step("进入群聊")
     def step1(self):
@@ -38,5 +38,7 @@ class GroupChatTask(TaskTemplate):
         itt.key_press(keybind.KEYBIND_INTERACTION)
     
 if __name__ == "__main__":
-    task = GroupChatTask()
+    task = GroupChatTask(session_id="debug")
     task.task_run()
+
+

@@ -1,4 +1,4 @@
-"""
+﻿"""
 检查并领取朝夕心愿
 """
 
@@ -92,8 +92,8 @@ zxxy_task_info_list = [
 
 
 class ZhaoxiTask(TaskTemplate):
-    def __init__(self):
-        super().__init__("zhaoxi_task")
+    def __init__(self, session_id):
+        super().__init__(session_id=session_id, name="zhaoxi_task")
         self.current_score = 0
         self.need_cost_energy = 0
         self.done_task_names = []
@@ -172,14 +172,25 @@ class ZhaoxiTask(TaskTemplate):
     @register_step("开始做朝夕心愿任务")
     def step3(self):
         task_dict = {
-            DAILY_TASK_COST_ENERGY: daily_task.CheckEnergyTask(need_cost_energy=self.need_cost_energy),
-            DAILY_TASK_PICKUP: AutoPathTask(path_name="朝夕心愿_采集", excepted_num=5),
-            DAILY_TASK_CATCH_INSECT: AutoPathTask(path_name="朝夕心愿_捕虫", excepted_num=3),
+            DAILY_TASK_COST_ENERGY: daily_task.CheckEnergyTask(
+                session_id=self.session_id,
+                need_cost_energy=self.need_cost_energy,
+            ),
+            DAILY_TASK_PICKUP: AutoPathTask(
+                session_id=self.session_id,
+                path_name="朝夕心愿_采集",
+                excepted_num=5,
+            ),
+            DAILY_TASK_CATCH_INSECT: AutoPathTask(
+                session_id=self.session_id,
+                path_name="朝夕心愿_捕虫",
+                excepted_num=3,
+            ),
             # DAILY_TASK_MINIGAME: AutoPathTask(path_name="朝夕心愿_小游戏"),
-            DAILY_TASK_GET_BLESS: daily_task.BlessTask(),
-            DAILY_TASK_JIHUA: daily_task.JihuaTask(),
-            DAILY_TASK_MONSTER: daily_task.MonsterTask(),
-            DAILY_TASK_TAKE_PHOTO: DailyPhotoTask(),
+            DAILY_TASK_GET_BLESS: daily_task.BlessTask(session_id=self.session_id),
+            DAILY_TASK_JIHUA: daily_task.JihuaTask(session_id=self.session_id),
+            DAILY_TASK_MONSTER: daily_task.MonsterTask(session_id=self.session_id),
+            DAILY_TASK_TAKE_PHOTO: DailyPhotoTask(session_id=self.session_id),
         }
         self.done_task_names = []
         for task in self.unfinished_tasks:
@@ -204,19 +215,19 @@ class ZhaoxiTask(TaskTemplate):
             self.log_to_gui("已设置不消耗剩余体力，跳过")
         elif energy_cost == "素材激化幻境":
             if DAILY_TASK_JIHUA not in self.done_task_names:
-                task = daily_task.JihuaTask()
+                task = daily_task.JihuaTask(session_id=self.session_id)
                 task.task_run()
             else:
                 self.log_to_gui("体力在做日常时以消耗，跳过")
         elif energy_cost == "祝福闪光幻境":
             if DAILY_TASK_GET_BLESS not in self.done_task_names:
-                task = daily_task.BlessTask()
+                task = daily_task.BlessTask(session_id=self.session_id)
                 task.task_run()
             else:
                 self.log_to_gui("体力在做日常时以消耗，跳过")
         elif energy_cost == "魔物试炼幻境":
             if DAILY_TASK_MONSTER not in self.done_task_names:
-                task = daily_task.MonsterTask()
+                task = daily_task.MonsterTask(session_id=self.session_id)
                 task.task_run()
             else:
                 self.log_to_gui("体力在做日常时以消耗，跳过")
@@ -244,6 +255,6 @@ class ZhaoxiTask(TaskTemplate):
     
 
 if __name__ == "__main__":
-    zhaoxi_task = ZhaoxiTask()
+    zhaoxi_task = ZhaoxiTask(session_id="debug")
     zhaoxi_task.task_run()
     print(zhaoxi_task.task_result)

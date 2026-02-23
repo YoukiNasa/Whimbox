@@ -1,12 +1,12 @@
-from whimbox.task.task_template import TaskTemplate, register_step
+﻿from whimbox.task.task_template import TaskTemplate, register_step
 from whimbox.common.keybind import keybind
 from whimbox.ui.ui_assets import IconSkipDialog
 from whimbox.interaction.interaction_core import itt
 import time
 
 class SkipDialogTask(TaskTemplate):
-    def __init__(self):
-        super().__init__("skip_dialog_task")
+    def __init__(self, session_id):
+        super().__init__(session_id=session_id, name="skip_dialog_task")
 
     @register_step()
     def step1(self):
@@ -21,5 +21,6 @@ class SkipDialogTask(TaskTemplate):
         pass
 
 if __name__ == "__main__":
-    task = SkipDialogTask()
+    task = SkipDialogTask(session_id="debug")
     task.task_run()
+

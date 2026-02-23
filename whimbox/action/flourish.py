@@ -1,12 +1,12 @@
-from whimbox.interaction.interaction_core import itt
+﻿from whimbox.interaction.interaction_core import itt
 from whimbox.common.utils.ui_utils import *
 from whimbox.task.task_template import *
 from whimbox.ability.ability import ability_manager
 from whimbox.ability.cvar import ABILITY_NAME_FLOURISH
 
 class FlourishTask(TaskTemplate):
-    def __init__(self):
-        super().__init__("FlourishTask")
+    def __init__(self, session_id):
+        super().__init__(session_id=session_id, name="FlourishTask")
     
     @register_step("开始芳间巡游")
     def step1(self):
@@ -20,5 +20,6 @@ class FlourishTask(TaskTemplate):
         itt.right_click()
 
 if __name__ == "__main__":
-    task = FlourishTask()
+    task = FlourishTask(session_id="debug")
     task.task_run()
+

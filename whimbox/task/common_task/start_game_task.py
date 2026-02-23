@@ -1,4 +1,4 @@
-
+﻿
 from whimbox.task.task_template import *
 from whimbox.config.config import global_config
 from whimbox.common.path_lib import find_game_launcher_folder
@@ -14,8 +14,8 @@ from whimbox.common.utils.posi_utils import area_center
 import os, time
 
 class StartGameTask(TaskTemplate):
-    def __init__(self):
-        super().__init__("start_game_task")
+    def __init__(self, session_id):
+        super().__init__(session_id=session_id, name="start_game_task")
 
     @register_step("启动叠纸启动器")
     def step1(self):
@@ -173,5 +173,6 @@ class StartGameTask(TaskTemplate):
         pass
 
 if __name__ == "__main__":
-    start_game_task = StartGameTask()
+    start_game_task = StartGameTask(session_id="debug")
     start_game_task.task_run()
+

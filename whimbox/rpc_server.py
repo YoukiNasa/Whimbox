@@ -377,9 +377,18 @@ async def _dispatch(method: str, params: Dict[str, Any]) -> Any:
         task_id = params.get("task_id")
         if not task_id:
             raise ValueError("task_id is required")
+        task_info = task_manager.get(task_id)
         ok = task_manager.stop(task_id)
         if not ok:
             raise ValueError("task not found")
+        _notify(
+            "event.agent.status",
+            {
+                "session_id": (task_info or {}).get("session_id", "default"),
+                "status": "on_tool_stopping",
+                "detail": "manual_stop",
+            },
+        )
         return {"ok": True}
 
     if method == "script.query_path":

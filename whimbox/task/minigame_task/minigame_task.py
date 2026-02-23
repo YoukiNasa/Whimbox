@@ -1,4 +1,4 @@
-# 小游戏模板
+﻿# 小游戏模板
 
 from whimbox.task.task_template import *
 from whimbox.ui.ui_assets import *
@@ -11,8 +11,8 @@ from whimbox.common.scripts_manager import *
 
 
 class MinigameTask(TaskTemplate):
-    def __init__(self, macro_name: str):
-        super().__init__("minigame_task")
+    def __init__(self, session_id, macro_name: str):
+        super().__init__(session_id=session_id, name="minigame_task")
         self.max_retry_times = 1
         self.retry_times = 0
         self.macro_name = macro_name
@@ -43,7 +43,7 @@ class MinigameTask(TaskTemplate):
         def check_stop_func():
             return not itt.get_img_existence(IconPageMainFeature)
 
-        task = RunMacroTask(self.macro_name, check_stop_func=check_stop_func)
+        task = RunMacroTask(self.session_id, self.macro_name, check_stop_func=check_stop_func)
         task.task_run()
     
     @ register_step("检查是否失败")
@@ -101,5 +101,5 @@ class MinigameTask(TaskTemplate):
         wait_until_appear(IconPageMainFeature, retry_time=3)
 
 if __name__ == "__main__":
-    task = MinigameTask("朝夕心愿_小游戏_穿梭大冒险_宏")
+    task = MinigameTask(session_id="debug", macro_name="朝夕心愿_小游戏_穿梭大冒险_宏")
     task.task_run()

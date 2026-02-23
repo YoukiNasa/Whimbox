@@ -1,4 +1,4 @@
-"""
+﻿"""
 1.11版本大富翁，自动抛骰子搓核弹
 """
 
@@ -124,8 +124,8 @@ def choose_arrow(arrows):
     return min(bottom_candidates, key=lambda p: p[0])
 
 class RollDiceTask(TaskTemplate):
-    def __init__(self):
-        super().__init__("roll_dice_task")
+    def __init__(self, session_id):
+        super().__init__(session_id=session_id, name="roll_dice_task")
         self.random_dice_num = 0
         self.rotate_dice_num = 0
         self.control_dice_num = 0

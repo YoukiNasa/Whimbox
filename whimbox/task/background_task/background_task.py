@@ -230,6 +230,26 @@ class BackgroundTask:
                 # Listener 线程停止后无法再次 start，清空以便重建
                 self.mouse_listener = None
 
+    def _resolve_session_id(self) -> str:
+        """解析后台日志/子任务应归属的会话 ID。"""
+        from whimbox.common.cvars import get_current_session_id
+        sid = get_current_session_id()
+        if sid and sid != "default":
+            return sid
+        try:
+            from whimbox.session_manager import session_manager
+            sessions = session_manager.list()
+            if sessions:
+                running = next((s for s in sessions if s.get("state") == "RUNNING"), None)
+                if running and running.get("session_id"):
+                    return running["session_id"]
+                latest = sessions[-1].get("session_id")
+                if latest:
+                    return latest
+        except Exception as e:
+            logger.debug(f"后台任务解析 session_id 失败: {e}")
+        return "default"
+
     def log_to_gui(self, msg, is_error=False, type="update_ai_message"):
         raw_message = msg
         if is_error:
@@ -243,17 +263,17 @@ class BackgroundTask:
         from whimbox.rpc_server import notify_event
         from whimbox.ingame_ui.ingame_ui import win_ingame_ui
 
-        session_id = get_current_session_id()
-        notify_event(
-            "event.task.log",
-            {
-                "session_id": session_id,
-                "message": msg,
-                "raw_message": raw_message,
-                "level": level,
-                "type": type,
-            },
-        )
+        session_id = self._resolve_session_id()
+        payload = {
+            "message": msg,
+            "raw_message": raw_message,
+            "level": level,
+            "type": type,
+        }
+        # 后台线程里 contextvars 往往是 default，会被前端会话过滤误丢弃；默认值时不透传 session_id。
+        if session_id and session_id != "default":
+            payload["session_id"] = session_id
+        notify_event("event.task.log", payload)
         if win_ingame_ui:
             win_ingame_ui.update_message(msg, type)
         logger.info(msg)
@@ -383,11 +403,14 @@ class BackgroundTask:
     
     def _execute_fishing(self):
         """执行钓鱼任务"""
+        from whimbox.common.cvars import current_session_id
+        session_id = self._resolve_session_id()
+        token = current_session_id.set(session_id)
         try:
             # 停止鼠标监听，避免干扰鼠标点击
             self._stop_mouse_listener()
             self.log_to_gui("检测到钓鱼界面，开始自动钓鱼", type="add_ai_message")
-            fishing_task = FishingTask()
+            fishing_task = FishingTask(session_id=session_id)
             fishing_task.step2()
              # 因为不是完整的task运行流程，所以手动清除current_stop_flag
             current_stop_flag.set(None)
@@ -401,6 +424,7 @@ class BackgroundTask:
         except Exception as e:
             logger.error(f"自动钓鱼出错: {e}")
         finally:
+            current_session_id.reset(token)
             self._start_mouse_listener()
 
     def _detect_dialogue_opportunity(self, cap) -> bool:
@@ -412,10 +436,16 @@ class BackgroundTask:
     
     def _execute_dialogue(self):
         """执行对话任务"""
-        # self.log_to_gui("检测到对话界面，开始自动对话", type="add_ai_message")
-        skip_dialog_task = SkipDialogTask()
-        skip_dialog_task.task_run()
-        # self.log_to_gui(f"自动对话结束", type="finalize_ai_message")
+        from whimbox.common.cvars import current_session_id
+        session_id = self._resolve_session_id()
+        token = current_session_id.set(session_id)
+        try:
+            # self.log_to_gui("检测到对话界面，开始自动对话", type="add_ai_message")
+            skip_dialog_task = SkipDialogTask(session_id=session_id)
+            skip_dialog_task.task_run()
+            # self.log_to_gui(f"自动对话结束", type="finalize_ai_message")
+        finally:
+            current_session_id.reset(token)
 
     def _detect_pickup_opportunity(self, cap) -> bool:
         """检测是否可以采集"""

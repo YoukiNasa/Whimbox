@@ -1,4 +1,4 @@
-from whimbox.task.task_template import *
+﻿from whimbox.task.task_template import *
 from whimbox.interaction.interaction_core import itt
 from whimbox.common.scripts_manager import *
 from whimbox.common.logger import logger
@@ -12,8 +12,8 @@ from whimbox.ui.page_assets import *
 class RunMacroTask(TaskTemplate):
     """运行宏记录的任务"""
     
-    def __init__(self, macro_filename: str, delay=0, check_stop_func=None):
-        super().__init__("run_macro_task")
+    def __init__(self, session_id, macro_filename: str, delay=0, check_stop_func=None):
+        super().__init__(session_id=session_id, name="run_macro_task")
         self.check_stop_func = check_stop_func
         self.delay = delay
         self.macro_record = scripts_manager.query_macro(macro_filename, return_one=True)
@@ -151,5 +151,6 @@ class RunMacroTask(TaskTemplate):
         # 不调用父类的 handle_finally，因为不需要返回主界面
 
 if __name__ == "__main__":
-    task = RunMacroTask("拖动测试")
+    task = RunMacroTask(session_id="debug", macro_filename="拖动测试")
     task.task_run()
+

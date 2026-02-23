@@ -1,4 +1,4 @@
-"""
+﻿"""
 激化素材幻境
 """
 
@@ -15,8 +15,8 @@ from whimbox.common.keybind import keybind
 target_material_list = ["噗灵", "丝线", "闪亮泡泡"]
 
 class JihuaTask(TaskTemplate):
-    def __init__(self, target_material=None, cost_material=None):
-        super().__init__("jihua_task")
+    def __init__(self, session_id, target_material=None, cost_material=None):
+        super().__init__(session_id=session_id, name="jihua_task")
         if target_material:
             self.target_material = target_material
         else:
@@ -133,6 +133,7 @@ class JihuaTask(TaskTemplate):
 
 
 if __name__ == "__main__":
-    jihua_task = JihuaTask()
+    jihua_task = JihuaTask(session_id="debug")
     result = jihua_task.task_run()
     print(result)
+
