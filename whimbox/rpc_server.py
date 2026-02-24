@@ -27,6 +27,9 @@ _setting_options_cache: Optional[Dict[str, Any]] = None
 _material_options_cache: Optional[list[str]] = None
 _overlay_hotkey_listener: Optional[keyboard.Listener] = None
 _last_overlay_hotkey_ts = 0.0
+_agent_manual_stop_sessions: Set[str] = set()
+_agent_stopping_sessions: Set[str] = set()
+_task_stopping_run_ids: Set[str] = set()
 
 
 async def _broadcast(method: str, params: Dict[str, Any]) -> None:
@@ -73,6 +76,125 @@ def notify_event(method: str, params: Dict[str, Any]) -> None:
     _notify(method, params)
 
 
+def _notify_run_status(
+    *,
+    session_id: str,
+    run_id: str,
+    source: str,
+    phase: str,
+    tool_id: str = "",
+    detail: str = "",
+    result: Optional[Dict[str, Any]] = None,
+    error: str = "",
+) -> None:
+    payload: Dict[str, Any] = {
+        "session_id": session_id or "default",
+        "run_id": run_id or "",
+        "source": source,
+        "phase": phase,
+    }
+    if source == "task" and run_id:
+        payload["task_id"] = run_id
+    if tool_id:
+        payload["tool_id"] = tool_id
+    if detail:
+        payload["detail"] = detail
+    if result is not None:
+        payload["result"] = result
+    if error:
+        payload["error"] = error
+    _notify("event.run.status", payload)
+
+
+def _notify_run_log(
+    *,
+    session_id: str,
+    run_id: str,
+    source: str,
+    message: str,
+    raw_message: str,
+    level: str = "info",
+    type_: str = "update_ai_message",
+) -> None:
+    _notify(
+        "event.run.log",
+        {
+            "session_id": session_id or "default",
+            "run_id": run_id or "",
+            "source": source,
+            "message": message,
+            "raw_message": raw_message,
+            "level": level,
+            "type": type_,
+        },
+    )
+
+
+def _emit_agent_stopping(session_id: str, *, detail: str = "manual_stop") -> None:
+    sid = session_id or "default"
+    if sid in _agent_stopping_sessions:
+        return
+    _agent_stopping_sessions.add(sid)
+    _notify_run_status(
+        session_id=sid,
+        run_id=sid,
+        source="agent",
+        phase="stopping",
+        detail=detail,
+    )
+    _notify_run_log(
+        session_id=sid,
+        run_id=sid,
+        source="agent",
+        message="⏳ 停止任务中，请稍后...",
+        raw_message="停止任务中，请稍后...",
+    )
+
+
+def _emit_task_stopping(task_info: Dict[str, Any], *, detail: str = "manual_stop") -> None:
+    run_id = str(task_info.get("task_id") or "")
+    if run_id and run_id in _task_stopping_run_ids:
+        return
+    if run_id:
+        _task_stopping_run_ids.add(run_id)
+    session_id = str(task_info.get("session_id") or "default")
+    tool_id = str(task_info.get("tool_id") or "")
+    _notify_run_status(
+        session_id=session_id,
+        run_id=run_id,
+        source="task",
+        phase="stopping",
+        tool_id=tool_id,
+        detail=detail,
+    )
+    _notify_run_log(
+        session_id=session_id,
+        run_id=run_id,
+        source="task",
+        message="⏳ 停止任务中，请稍后...",
+        raw_message="停止任务中，请稍后...",
+    )
+
+
+def _request_global_stop(*, detail: str) -> bool:
+    stopped_any = False
+
+    for item in mcp_agent.request_stop_all():
+        sid = str(item.get("session_id") or "default")
+        tool_running = bool(item.get("tool_running"))
+        if not tool_running:
+            continue
+        _agent_manual_stop_sessions.add(sid)
+        _emit_agent_stopping(sid, detail=detail)
+        stopped_any = True
+
+    for task_info in task_manager.stop_all():
+        _emit_task_stopping(task_info, detail=detail)
+        stopped_any = True
+
+    return stopped_any
+
+
 def _get_stop_hotkey() -> str:
     try:
         key = global_config.get("Whimbox", "stop_key")
@@ -105,9 +227,6 @@ def _start_overlay_hotkey_listener() -> None:
     def on_press(key):
         global _last_overlay_hotkey_ts
         try:
-            # 有前台任务时，停止热键由任务链自己处理，避免同次按键双触发。
-            if has_foreground_task():
-                return
             configured = _get_stop_hotkey()
             if not _is_hotkey_match(key, configured):
                 return
@@ -116,6 +235,11 @@ def _start_overlay_hotkey_listener() -> None:
             if now - _last_overlay_hotkey_ts < 0.2:
                 return
             _last_overlay_hotkey_ts = now
+
+            if has_foreground_task():
+                stopped = _request_global_stop(detail="hotkey_stop")
+                if stopped:
+                    return
 
             _notify(
                 "event.overlay.show",
@@ -300,14 +424,68 @@ async def _dispatch(method: str, params: Dict[str, Any]) -> Any:
 
         def status_callback(status_type: str, detail: str = "") -> None:
             logger.info(f"Agent status: {status_type}, {detail}")
-            _notify(
-                "event.agent.status",
-                {
-                    "session_id": session_id,
-                    "status": status_type,
-                    "detail": detail,
-                },
-            )
+            if status_type == "on_tool_start":
+                _notify_run_status(
+                    session_id=session_id,
+                    run_id=session_id,
+                    source="agent",
+                    phase="started",
+                    detail=detail,
+                )
+            elif status_type == "on_tool_stopping":
+                _notify_run_status(
+                    session_id=session_id,
+                    run_id=session_id,
+                    source="agent",
+                    phase="stopping",
+                    detail=detail,
+                )
+            elif status_type == "on_tool_end":
+                manually_stopped = session_id in _agent_manual_stop_sessions
+                _notify_run_status(
+                    session_id=session_id,
+                    run_id=session_id,
+                    source="agent",
+                    phase="cancelled" if manually_stopped else "completed",
+                    detail=detail,
+                )
+                _notify(
+                    "event.run.log",
+                    {
+                        "session_id": session_id,
+                        "run_id": session_id,
+                        "source": "agent",
+                        "message": "🛑 任务已停止" if manually_stopped else "✅ 任务已完成",
+                        "raw_message": "任务已停止" if manually_stopped else "任务已完成",
+                        "level": "info",
+                        "type": "finalize_ai_message",
+                    },
+                )
+                if manually_stopped:
+                    _agent_manual_stop_sessions.discard(session_id)
+                _agent_stopping_sessions.discard(session_id)
+            elif status_type in {"on_tool_error", "error"}:
+                _notify_run_status(
+                    session_id=session_id,
+                    run_id=session_id,
+                    source="agent",
+                    phase="error",
+                    detail=detail,
+                )
+                _notify(
+                    "event.run.log",
+                    {
+                        "session_id": session_id,
+                        "run_id": session_id,
+                        "source": "agent",
+                        "message": "❌ 任务失败",
+                        "raw_message": "任务失败",
+                        "level": "error",
+                        "type": "finalize_ai_message",
+                    },
+                )
+                _agent_manual_stop_sessions.discard(session_id)
+                _agent_stopping_sessions.discard(session_id)
 
         response_text = await mcp_agent.query_agent(
             message,
@@ -323,14 +501,8 @@ async def _dispatch(method: str, params: Dict[str, Any]) -> Any:
         if not stop_result.get("ok"):
             return {"ok": False, "tool_running": bool(stop_result.get("tool_running"))}
         if stop_result.get("tool_running"):
-            _notify(
-                "event.agent.status",
-                {
-                    "session_id": session_id,
-                    "status": "on_tool_stopping",
-                    "detail": "manual_stop",
-                },
-            )
+            _agent_manual_stop_sessions.add(session_id)
+            _emit_agent_stopping(session_id, detail="manual_stop")
         return {"ok": True, "tool_running": bool(stop_result.get("tool_running"))}
 
     if method == "session.create":
@@ -400,15 +572,13 @@ async def _dispatch(method: str, params: Dict[str, Any]) -> Any:
         async def _run_task():
             registry = get_registry()
             task_manager.set_state(task.task_id, "RUNNING")
-            _notify(
-                "event.task.progress",
-                {
-                    "session_id": session_id,
-                    "task_id": task.task_id,
-                    "tool_id": tool_id,
-                    "progress": 0,
-                    "detail": "started",
-                },
+            _task_stopping_run_ids.discard(task.task_id)
+            _notify_run_status(
+                session_id=session_id,
+                run_id=task.task_id,
+                source="task",
+                phase="started",
+                tool_id=tool_id,
             )
             try:
                 result = await asyncio.to_thread(
@@ -416,33 +586,127 @@ async def _dispatch(method: str, params: Dict[str, Any]) -> Any:
                     tool_id,
                     session_id,
                     input_data,
-                    {"session_id": session_id, "stop_event": task.stop_event},
+                    {"session_id": session_id, "stop_event": task.stop_event, "run_id": task.task_id},
                 )
-                task_manager.set_state(task.task_id, "SUCCESS", result=result)
-                _notify(
-                    "event.task.progress",
-                    {
-                        "session_id": session_id,
-                        "task_id": task.task_id,
-                        "tool_id": tool_id,
-                        "progress": 1,
-                        "detail": "completed",
-                    },
-                )
+                result_status = ""
+                if isinstance(result, dict):
+                    result_status = str(result.get("status") or "").lower()
+
+                if result_status == "stop":
+                    task_manager.set_state(task.task_id, "CANCELLED", result=result)
+                    _notify_run_status(
+                        session_id=session_id,
+                        run_id=task.task_id,
+                        source="task",
+                        phase="cancelled",
+                        tool_id=tool_id,
+                        result=result,
+                    )
+                    msg = str((result or {}).get("message") or "任务已停止")
+                    _notify(
+                        "event.run.log",
+                        {
+                            "session_id": session_id,
+                            "run_id": task.task_id,
+                            "source": "task",
+                            "message": f"🛑 任务已停止：{msg}",
+                            "raw_message": msg,
+                            "level": "info",
+                            "type": "finalize_ai_message",
+                        },
+                    )
+                elif result_status in {"error", "failed"}:
+                    error_msg = str((result or {}).get("message") or "Task failed")
+                    task_manager.set_state(task.task_id, "ERROR", error=error_msg, result=result)
+                    _notify_run_status(
+                        session_id=session_id,
+                        run_id=task.task_id,
+                        source="task",
+                        phase="error",
+                        tool_id=tool_id,
+                        result=result,
+                        error=error_msg,
+                    )
+                    _notify(
+                        "event.run.log",
+                        {
+                            "session_id": session_id,
+                            "run_id": task.task_id,
+                            "source": "task",
+                            "message": f"❌ 任务失败：{error_msg}",
+                            "raw_message": error_msg,
+                            "level": "error",
+                            "type": "finalize_ai_message",
+                        },
+                    )
+                else:
+                    task_manager.set_state(task.task_id, "SUCCESS", result=result)
+                    _notify_run_status(
+                        session_id=session_id,
+                        run_id=task.task_id,
+                        source="task",
+                        phase="completed",
+                        tool_id=tool_id,
+                        result=result,
+                    )
+                    msg = str((result or {}).get("message") or "任务已完成")
+                    _notify(
+                        "event.run.log",
+                        {
+                            "session_id": session_id,
+                            "run_id": task.task_id,
+                            "source": "task",
+                            "message": f"✅ 任务已完成：{msg}",
+                            "raw_message": msg,
+                            "level": "info",
+                            "type": "finalize_ai_message",
+                        },
+                    )
             except asyncio.CancelledError:
-                task_manager.set_state(task.task_id, "CANCELLED")
+                cancelled_result = {"status": "stop", "message": "手动停止"}
+                task_manager.set_state(task.task_id, "CANCELLED", result=cancelled_result)
+                _notify_run_status(
+                    session_id=session_id,
+                    run_id=task.task_id,
+                    source="task",
+                    phase="cancelled",
+                    tool_id=tool_id,
+                    result=cancelled_result,
+                )
                 _notify(
-                    "event.task.progress",
+                    "event.run.log",
                     {
                         "session_id": session_id,
-                        "task_id": task.task_id,
-                        "tool_id": tool_id,
-                        "progress": 1,
-                        "detail": "cancelled",
+                        "run_id": task.task_id,
+                        "source": "task",
+                        "message": "🛑 任务已停止：手动停止",
+                        "raw_message": "手动停止",
+                        "level": "info",
+                        "type": "finalize_ai_message",
                     },
                 )
             except Exception as exc:  # noqa: BLE001
                 task_manager.set_state(task.task_id, "ERROR", error=str(exc))
+                _notify_run_status(
+                    session_id=session_id,
+                    run_id=task.task_id,
+                    source="task",
+                    phase="error",
+                    tool_id=tool_id,
+                    error=str(exc),
+                )
+                _notify(
+                    "event.run.log",
+                    {
+                        "session_id": session_id,
+                        "run_id": task.task_id,
+                        "source": "task",
+                        "message": f"❌ 任务失败：{exc}",
+                        "raw_message": str(exc),
+                        "level": "error",
+                        "type": "finalize_ai_message",
+                    },
+                )
                 _notify(
                     "event.error",
                     {
@@ -453,6 +717,7 @@ async def _dispatch(method: str, params: Dict[str, Any]) -> Any:
                     },
                 )
             finally:
+                _task_stopping_run_ids.discard(task.task_id)
                 idle_state = session_manager.set_state(session_id, "IDLE")
                 if idle_state:
                     _notify("event.session.state", idle_state)
@@ -469,14 +734,7 @@ async def _dispatch(method: str, params: Dict[str, Any]) -> Any:
         ok = task_manager.stop(task_id)
         if not ok:
             raise ValueError("task not found")
-        _notify(
-            "event.agent.status",
-            {
-                "session_id": (task_info or {}).get("session_id", "default"),
-                "status": "on_tool_stopping",
-                "detail": "manual_stop",
-            },
-        )
+        _emit_task_stopping(task_info or {"task_id": task_id}, detail="manual_stop")
         return {"ok": True}
 
     if method == "script.query_path":

@@ -44,15 +44,18 @@ def _check_game_ok(session_id: str = "default") -> Dict[str, Any]:
             "推荐使用1920x1080或1920x1200或2560x1440或2560x1600分辨率，窗口模式。"
             "如遇到bug，请修改游戏分辨率和显示模式后重试\n"
         )
-        payload = {
-            "message": msg,
-            "raw_message": msg,
-            "level": "info",
-            "type": "update_ai_message",
-        }
-        if session_id and session_id != "default":
-            payload["session_id"] = session_id
-        notify_event("event.task.log", payload)
+        notify_event(
+            "event.run.log",
+            {
+                "session_id": session_id,
+                "run_id": session_id,
+                "source": "task",
+                "message": msg,
+                "raw_message": msg,
+                "level": "info",
+                "type": "update_ai_message",
+            },
+        )
         logger.info(msg)
     return {}
 

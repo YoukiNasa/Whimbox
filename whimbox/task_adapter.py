@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional, Type
 
-from whimbox.common.cvars import current_session_id, current_stop_flag
+from whimbox.common.cvars import current_run_id, current_session_id, current_stop_flag
 from whimbox.task.task_template import TaskResult, TaskTemplate
 
 
@@ -22,6 +22,11 @@ class TaskAdapter:
             current_stop_flag.set(stop_event)
 
         current_session_id.set(resolved_session_id)
+        run_id = context.get("run_id")
+        if isinstance(run_id, str):
+            current_run_id.set(run_id)
+        else:
+            current_run_id.set("")
 
         result = task.task_run()
         if isinstance(result, TaskResult):

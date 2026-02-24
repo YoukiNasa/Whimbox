@@ -82,9 +82,16 @@ class TaskManager:
             if not task:
                 return False
             task.stop_event.set()
-            if task.asyncio_task:
-                task.asyncio_task.cancel()
             return True
+
+    def stop_all(self) -> list[Dict[str, Any]]:
+        stopped: list[Dict[str, Any]] = []
+        with self._lock:
+            for task in self._tasks.values():
+                if task.state in {"PENDING", "RUNNING"}:
+                    task.stop_event.set()
+                    stopped.append(task.to_dict())
+        return stopped
 
 
 task_manager = TaskManager()

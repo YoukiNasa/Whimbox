@@ -2,10 +2,10 @@ from whimbox.common.logger import logger
 from whimbox.common.utils.ui_utils import back_to_page_main
 from whimbox.common.cvars import (
     current_stop_flag, 
-    get_current_stop_flag,
     set_foreground_task_running
 )
 from whimbox.config.config import global_config
+from whimbox.common.cvars import get_current_run_id
 
 from pynput import keyboard
 import time
@@ -93,8 +93,6 @@ class TaskTemplate:
             self.listener = keyboard.Listener(on_press=self._on_key_press)
             self.listener.daemon = True  # 设为守护线程
             self.listener.start()
-            # 添加可配置的停止热键（默认 "/"）
-            self.add_hotkey(self._get_stop_hotkey(), self.task_stop)
         else:
             self.key_callbacks = None
             self.listener = None
@@ -233,19 +231,16 @@ class TaskTemplate:
 
         except Exception as e:
             self.handle_exception(e)
-            self.error_step.state.msg = str(e)
-            self.current_step = self.error_step
-            self.update_task_result(status=STATE_TYPE_ERROR, message=self.error_step.state.msg)
-            logger.error(traceback.format_exc())
+            if self.stop_flag.is_set():
+                self.update_task_result(status=STATE_TYPE_STOP, message="任务已停止")
+            else:
+                self.error_step.state.msg = str(e)
+                self.current_step = self.error_step
+                self.update_task_result(status=STATE_TYPE_ERROR, message=self.error_step.state.msg)
+                logger.error(traceback.format_exc())
         
         finally:
             self.handle_finally()
-            # 显示任务结果
-            if self.task_result.message:
-                if self.task_result.status == STATE_TYPE_SUCCESS:
-                    self.log_to_gui(self.task_result.message)
-                else:
-                    self.log_to_gui(self.task_result.message, is_error=True)
             return self.task_result
 
 
@@ -266,22 +261,13 @@ class TaskTemplate:
         '''如果子类有自己额外的停止代码，就实现这个方法，并调用父类的这个方法'''
         if not self.stop_flag.is_set():
             self.stop_flag.set()
-            from whimbox.rpc_server import notify_event
-            notify_event(
-                "event.agent.status",
-                {
-                    "session_id": self.session_id,
-                    "status": "on_tool_stopping",
-                    "detail": "manual_stop",
-                },
-            )
-        self.update_task_result(status=STATE_TYPE_STOP, message=message or "停止任务", data=data)
+        self.update_task_result(status=STATE_TYPE_STOP, message=message or "任务已停止", data=data)
         logger.info(f"停止任务: {self.name}")
 
     def need_stop(self):
         if self.stop_flag.is_set():
             if self.task_result.status != STATE_TYPE_STOP:
-                self.update_task_result(status=STATE_TYPE_STOP)
+                self.update_task_result(status=STATE_TYPE_STOP, message="任务已停止")
             return True
         else:
             return False
@@ -291,25 +277,36 @@ class TaskTemplate:
         return self.current_step.state.msg if self.current_step else ""
 
 
-    def log_to_gui(self, msg, is_error=False, type="update_ai_message"):
+    def log_to_gui(self, msg, is_error=False, is_stopped=False, is_loading=False, type="update_ai_message"):
         raw_message = msg
-        if not is_error:
-            msg = f"✅ {msg}"
+        if is_stopped:
+            msg = f"🛑 {msg}"
+            level = "info"
+        elif is_loading:
+            msg = f"⏳ {msg}"
             level = "info"
         else:
-            msg = f"❌ {msg}"
-            level = "error"
+            if not is_error:
+                msg = f"✅ {msg}"
+                level = "info"
+            else:
+                msg = f"❌ {msg}"
+                level = "error"
 
         from whimbox.rpc_server import notify_event
 
-        payload = {
-            "session_id": self.session_id,
-            "message": msg,
-            "raw_message": raw_message,
-            "level": level,
-            "type": type,
-        }
-        notify_event("event.task.log", payload)
+        notify_event(
+            "event.run.log",
+            {
+                "session_id": self.session_id,
+                "run_id": get_current_run_id(),
+                "source": "task",
+                "message": msg,
+                "raw_message": raw_message,
+                "level": level,
+                "type": type,
+            },
+        )
         logger.info(msg)
 
 

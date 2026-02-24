@@ -109,6 +109,21 @@ class Agent:
             stop_event.set()
         return {"ok": True, "tool_running": sid in self._tool_running_sessions}
 
+    def request_stop_all(self):
+        session_ids = set(self._session_stop_events.keys()) | set(self._session_stream_tasks.keys())
+        results = []
+        for sid in session_ids:
+            stop_event = self._session_stop_events.get(sid)
+            if stop_event is not None:
+                stop_event.set()
+            results.append(
+                {
+                    "session_id": sid,
+                    "tool_running": sid in self._tool_running_sessions,
+                }
+            )
+        return results
+
     async def query_agent(self, text, thread_id="default", stream_callback=None, status_callback=None):
         if not self.langchain_agent:
             err_msg = self.err_msg or "Agent 未就绪，请先完成初始化。"

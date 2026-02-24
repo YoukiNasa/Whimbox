@@ -31,6 +31,12 @@ current_session_id: contextvars.ContextVar[str] = contextvars.ContextVar(
     default="default",
 )
 
+# 当前运行 ID（用于统一 run.status / run.log 关联）
+current_run_id: contextvars.ContextVar[str] = contextvars.ContextVar(
+    'current_run_id',
+    default="",
+)
+
 def get_current_stop_flag() -> threading.Event:
     """获取当前上下文的 stop_flag
     
@@ -47,6 +53,11 @@ def get_current_stop_flag() -> threading.Event:
 def get_current_session_id() -> str:
     """获取当前上下文的 session_id"""
     return current_session_id.get() or "default"
+
+
+def get_current_run_id() -> str:
+    """获取当前上下文的 run_id"""
+    return current_run_id.get() or ""
 
 # 全局前台任务运行标志（用于后台任务判断是否有前台任务在运行）
 _foreground_task_running = False

@@ -262,16 +262,18 @@ class BackgroundTask:
         from whimbox.rpc_server import notify_event
 
         session_id = self._resolve_session_id()
-        payload = {
-            "message": msg,
-            "raw_message": raw_message,
-            "level": level,
-            "type": type,
-        }
-        # 后台线程里 contextvars 往往是 default，会被前端会话过滤误丢弃；默认值时不透传 session_id。
-        if session_id and session_id != "default":
-            payload["session_id"] = session_id
-        notify_event("event.task.log", payload)
+        notify_event(
+            "event.run.log",
+            {
+                "session_id": session_id,
+                "run_id": f"background:{session_id}",
+                "source": "background",
+                "message": msg,
+                "raw_message": raw_message,
+                "level": level,
+                "type": type,
+            },
+        )
         logger.info(msg)
 
     def stop(self):
