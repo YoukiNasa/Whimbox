@@ -250,14 +250,18 @@ class BackgroundTask:
             logger.debug(f"后台任务解析 session_id 失败: {e}")
         return "default"
 
-    def log_to_gui(self, msg, is_error=False, type="update_ai_message"):
+    def log_to_gui(self, msg, is_error=False, is_stopped=False, type="update_ai_message"):
         raw_message = msg
-        if is_error:
-            msg = f"❌ {msg}"
-            level = "error"
-        else:
-            msg = f"✅ {msg}"
+        if is_stopped:
+            msg = f"🛑 {msg}"
             level = "info"
+        else:
+            if is_error:
+                msg = f"❌ {msg}"
+                level = "error"
+            else:
+                msg = f"✅ {msg}"
+                level = "info"
 
         from whimbox.rpc_server import notify_event
 
@@ -410,13 +414,16 @@ class BackgroundTask:
             self.log_to_gui("检测到钓鱼界面，开始自动钓鱼", type="add_ai_message")
             self.log_to_gui("你可以按 " + global_config.get("Whimbox", "stop_key") + " 键，随时停止钓鱼")
             fishing_task = FishingTask(session_id=session_id)
+            # 后台钓鱼直接调用 step2，不经过 rpc_server 的 task.stop 路径，
+            # 这里显式补回停止热键绑定。
+            fishing_task.add_hotkey(global_config.get("Whimbox", "stop_key"), fishing_task.task_stop)
             fishing_task.step2()
              # 因为不是完整的task运行流程，所以手动清除current_stop_flag
             current_stop_flag.set(None)
             if fishing_task.task_result.status == STATE_TYPE_SUCCESS:
                 self.log_to_gui(f"自动钓鱼完成: {fishing_task.task_result.message}", type="finalize_ai_message")
             elif fishing_task.task_result.status == STATE_TYPE_STOP:
-                self.log_to_gui(f"手动停止钓鱼", type="finalize_ai_message")
+                self.log_to_gui(f"手动停止钓鱼", is_stopped=True, type="finalize_ai_message")
                 time.sleep(5) # 等待5秒，避免又检测到钓鱼界面，又开始自动钓鱼
             else:
                 self.log_to_gui(f"自动钓鱼失败: {fishing_task.task_result.message}", type="finalize_ai_message")
