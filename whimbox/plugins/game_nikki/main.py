@@ -57,6 +57,8 @@ def _check_game_ok(session_id: str = "default") -> Dict[str, Any]:
             },
         )
         logger.info(msg)
+    # 将游戏窗口前置
+    HANDLE_OBJ.set_foreground()
     return {}
 
 
