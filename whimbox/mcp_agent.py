@@ -128,7 +128,7 @@ class Agent:
         if not self.langchain_agent:
             err_msg = self.err_msg or "Agent 未就绪，请先完成初始化。"
             if status_callback:
-                status_callback("error", err_msg)
+                status_callback("error", err_msg, None)
             raise RuntimeError(err_msg)
         logger.debug("开始调用大模型")
         config = {"configurable": {"thread_id": thread_id}}
@@ -144,7 +144,7 @@ class Agent:
         
         # 通知开始思考
         if status_callback:
-            status_callback("thinking")
+            status_callback("thinking", "", None)
         
         async def _run_stream():
             nonlocal full_response, tool_running
@@ -169,17 +169,17 @@ class Agent:
                     tool_running = True
                     self._tool_running_sessions.add(session_id)
                     if status_callback:
-                        status_callback("on_tool_start", tool_name)
+                        status_callback("on_tool_start", tool_name, None)
 
                 elif event_type == "on_tool_end":
                     # 工具调用结束
                     tool_name = event.get("name", "")
                     tool_running = False
                     self._tool_running_sessions.discard(session_id)
-                    if stream_callback:
-                        stream_callback(f"💭 任务完成，总结成果中~\n")
+                    # if stream_callback:
+                    #     stream_callback(f"💭 任务完成，总结成果中~\n")
                     if status_callback:
-                        status_callback("on_tool_end", tool_name)
+                        status_callback("on_tool_end", tool_name, {"output": data.get("output")})
 
                 elif event_type == "on_tool_error":
                     # 工具调用错误
@@ -190,12 +190,12 @@ class Agent:
                     if stream_callback:
                         stream_callback(f"❌ 任务失败: {error}\n")
                     if status_callback:
-                        status_callback("on_tool_error", tool_name)
+                        status_callback("on_tool_error", tool_name, {"error": error})
 
                 elif event_type == "on_chat_model_start":
                     # 开始生成回复
                     if status_callback:
-                        status_callback("generating")
+                        status_callback("generating", "", None)
 
                 elif event_type == "on_chain_end":
                     # 整个链条结束，获取最终结果

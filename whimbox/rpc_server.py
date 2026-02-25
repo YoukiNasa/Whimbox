@@ -28,7 +28,6 @@ _setting_options_cache: Optional[Dict[str, Any]] = None
 _material_options_cache: Optional[list[str]] = None
 _overlay_hotkey_listener: Optional[keyboard.Listener] = None
 _last_overlay_hotkey_ts = 0.0
-_agent_manual_stop_sessions: Set[str] = set()
 _agent_stopping_sessions: Set[str] = set()
 _task_stopping_run_ids: Set[str] = set()
 _agent_active_tool_call_ids: Dict[str, str] = {}
@@ -215,7 +214,6 @@ def _request_global_stop(*, detail: str) -> bool:
         tool_running = bool(item.get("tool_running"))
         if not tool_running:
             continue
-        _agent_manual_stop_sessions.add(sid)
         _emit_agent_stopping(sid, detail=detail)
         stopped_any = True
 
@@ -453,7 +451,7 @@ async def _dispatch(method: str, params: Dict[str, Any]) -> Any:
                 },
             )
 
-        def status_callback(status_type: str, detail: str = "") -> None:
+        def status_callback(status_type: str, detail: str = "", meta: Optional[Dict[str, Any]] = None) -> None:
             logger.info(f"Agent status: {status_type}, {detail}")
             if status_type == "on_tool_start":
                 tool_call_id = _bind_agent_tool_call_id(session_id)
@@ -476,13 +474,39 @@ async def _dispatch(method: str, params: Dict[str, Any]) -> Any:
                     tool_call_id=tool_call_id,
                 )
             elif status_type == "on_tool_end":
-                manually_stopped = session_id in _agent_manual_stop_sessions
                 tool_call_id = _resolve_agent_tool_call_id(session_id)
+                output = meta.get("output") if isinstance(meta, dict) else None
+                result_status = ""
+                result_message = ""
+                output_content = getattr(output, "content", "")
+                if isinstance(output_content, str) and output_content.strip():
+                    try:
+                        output_json = json.loads(output_content)
+                    except Exception:  # noqa: BLE001
+                        output_json = {}
+                    if isinstance(output_json, dict):
+                        result_status = str(output_json.get("status") or "").lower()
+                        result_message = str(output_json.get("message") or "").strip()
+                if result_status in {"failed", "error"}:
+                    phase = "error"
+                    level = "error"
+                    message = f"❌ 任务失败：{result_message}" if result_message else "❌ 任务失败"
+                    raw_message = result_message or "任务失败"
+                elif result_status == "stop" or session_id in _agent_stopping_sessions:
+                    phase = "cancelled"
+                    level = "info"
+                    message = f"🛑 任务已停止：{result_message}" if result_message else "🛑 任务已停止"
+                    raw_message = result_message or "任务已停止"
+                else:
+                    phase = "completed"
+                    level = "info"
+                    message = f"✅ 任务已完成：{result_message}" if result_message else "✅ 任务已完成"
+                    raw_message = result_message or "任务已完成"
                 _notify_run_status(
                     session_id=session_id,
                     run_id=session_id,
                     source="agent",
-                    phase="cancelled" if manually_stopped else "completed",
+                    phase=phase,
                     detail=detail,
                     tool_call_id=tool_call_id,
                 )
@@ -490,18 +514,19 @@ async def _dispatch(method: str, params: Dict[str, Any]) -> Any:
                     session_id=session_id,
                     run_id=session_id,
                     source="agent",
-                    message="🛑 任务已停止" if manually_stopped else "✅ 任务已完成",
-                    raw_message="任务已停止" if manually_stopped else "任务已完成",
+                    message=message,
+                    raw_message=raw_message,
                     tool_call_id=tool_call_id,
-                    level="info",
+                    level=level,
                     type_="finalize_ai_message",
                 )
-                if manually_stopped:
-                    _agent_manual_stop_sessions.discard(session_id)
                 _agent_stopping_sessions.discard(session_id)
                 _clear_agent_tool_call_id(session_id)
             elif status_type in {"on_tool_error", "error"}:
                 tool_call_id = _resolve_agent_tool_call_id(session_id)
+                error_message = ""
+                if isinstance(meta, dict):
+                    error_message = str(meta.get("error") or "").strip()
                 _notify_run_status(
                     session_id=session_id,
                     run_id=session_id,
@@ -514,13 +539,12 @@ async def _dispatch(method: str, params: Dict[str, Any]) -> Any:
                     session_id=session_id,
                     run_id=session_id,
                     source="agent",
-                    message="❌ 任务失败",
-                    raw_message="任务失败",
+                    message=f"❌ 任务失败：{error_message}" if error_message else "❌ 任务失败",
+                    raw_message=error_message or "任务失败",
                     tool_call_id=tool_call_id,
                     level="error",
                     type_="finalize_ai_message",
                 )
-                _agent_manual_stop_sessions.discard(session_id)
                 _agent_stopping_sessions.discard(session_id)
                 _clear_agent_tool_call_id(session_id)
 
@@ -538,7 +562,6 @@ async def _dispatch(method: str, params: Dict[str, Any]) -> Any:
         if not stop_result.get("ok"):
             return {"ok": False, "tool_running": bool(stop_result.get("tool_running"))}
         if stop_result.get("tool_running"):
-            _agent_manual_stop_sessions.add(session_id)
             _emit_agent_stopping(session_id, detail="manual_stop")
         return {"ok": True, "tool_running": bool(stop_result.get("tool_running"))}
 
