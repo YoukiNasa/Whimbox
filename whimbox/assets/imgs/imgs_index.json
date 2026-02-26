@@ -122,6 +122,9 @@
   "AreaMiraCrownOverview": {
     "rel_path": "imgs\\Windows\\UI\\mira_crown\\AreaMiraCrownOverview.png"
   },
+  "AreaMiraCrownSecondDoor": {
+    "rel_path": "imgs\\Windows\\UI\\mira_crown\\AreaMiraCrownSecondDoor.jpg"
+  },
   "AreaMiraCrownThirdDoor": {
     "rel_path": "imgs\\Windows\\UI\\mira_crown\\AreaMiraCrownThirdDoor.jpg"
   },
@@ -286,6 +289,9 @@
   },
   "ButtonMiraCrownQuickReward": {
     "rel_path": "imgs\\Windows\\UI\\mira_crown\\ButtonMiraCrownQuickReward.png"
+  },
+  "ButtonMiraCrownRank": {
+    "rel_path": "imgs\\Windows\\UI\\mira_crown\\ButtonMiraCrownRank.png"
   },
   "ButtonMiraCrownSkipAll": {
     "rel_path": "imgs\\Windows\\UI\\mira_crown\\ButtonMiraCrownSkipAll.png"
@@ -511,6 +517,9 @@
   },
   "IconPhotoEdit": {
     "rel_path": "imgs\\Windows\\UI\\photo\\IconPhotoEdit.png"
+  },
+  "IconPhotoFeature": {
+    "rel_path": "imgs\\Windows\\UI\\photo\\IconPhotoFeature.png"
   },
   "IconPickupFeature": {
     "rel_path": "imgs\\Windows\\General\\IconPickupFeature.png"
@@ -973,6 +982,9 @@
   },
   "T_UI_icon_006": {
     "rel_path": "imgs\\Game\\MaterialIcon\\T_UI_icon_006.png"
+  },
+  "T_UI_map_img_icon_star_02": {
+    "rel_path": "imgs\\Game\\MarkIcon\\T_UI_map_img_icon_star_02.png"
   },
   "imgs_index": {
     "rel_path": "imgs\\imgs_index.json"
