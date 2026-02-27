@@ -35,6 +35,7 @@ class AllInOneTask(TaskTemplate):
                 self.log_to_gui(msg)
             return "step1"
         else:
+            self.update_task_result(STATE_TYPE_FAILED, task_result.message)
             return STEP_NAME_FINISH
 
 
