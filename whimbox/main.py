@@ -1,13 +1,12 @@
 import asyncio
 import sys
 
-from whimbox.plugin_runtime import init_plugins
-from whimbox.mcp_agent import mcp_agent
-from whimbox.rpc_server import start_rpc_server
 from whimbox.common.logger import logger
+from whimbox.common.windows_dpi import enable_dpi_awareness
 
 
 def _prepare():
+    enable_dpi_awareness()
     from whimbox.common.utils.utils import is_admin
     if not is_admin():
         logger.error("请用管理员权限运行")
@@ -20,6 +19,10 @@ def _prepare():
 
 def run_whimbox():
     _prepare()
+    from whimbox.plugin_runtime import init_plugins
+    from whimbox.mcp_agent import mcp_agent
+    from whimbox.rpc_server import start_rpc_server
+
     init_plugins()
     asyncio.run(mcp_agent.start())
     asyncio.run(start_rpc_server())

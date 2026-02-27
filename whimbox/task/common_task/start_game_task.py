@@ -70,6 +70,7 @@ class StartGameTask(TaskTemplate):
         while not self.need_stop() and retry_time > 0:
             time.sleep(1)
             text = launcher_itt.ocr_single_line(AreaLaunchButton)
+            logger.info(f"启动器按钮文字: {text}")
             if text == "":
                 retry_time -= 1
                 continue

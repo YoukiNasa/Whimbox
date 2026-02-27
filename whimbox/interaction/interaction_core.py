@@ -7,6 +7,7 @@ import cv2
 import os
 import ctypes
 
+from whimbox.common import path_lib
 from whimbox.ui.template import img_manager, text_manager, posi_manager
 from whimbox.common.timer_module import TimeoutTimer, AdvanceTimer
 from whimbox.common.cvars import *
@@ -489,7 +490,8 @@ class InteractionBGD:
             
     def save_snapshot(self, reason:str = ''):
         img = self.capture()
-        img_path = os.path.join(ROOT_PATH, "Logs", get_logger_format_date(), f"{reason} | {time.strftime('%H-%M-%S', time.localtime())}.jpg")
+        img_path = os.path.join(path_lib.LOG_PATH, f"{time.time()}.jpg")
+        # img_path = os.path.join(ROOT_PATH, "Logs", get_logger_format_date(), f"{reason} | {time.strftime('%H-%M-%S', time.localtime())}.jpg")
         logger.warning(f"Snapshot saved to {img_path}")
         cv2.imwrite(img_path, img)        
 
