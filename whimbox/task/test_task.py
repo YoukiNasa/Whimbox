@@ -1,12 +1,12 @@
-from whimbox.common.utils.ui_utils import back_to_page_main
+﻿from whimbox.common.utils.ui_utils import back_to_page_main
 from whimbox.task.task_template import TaskTemplate, register_step
 import time
 from whimbox.common.logger import logger
 from whimbox.ui.ui import ui_control
 
 class TestTask(TaskTemplate):
-    def __init__(self):
-        super().__init__("test_task")
+    def __init__(self, session_id):
+        super().__init__(session_id=session_id, name="test_task")
         self.count = 0
 
     @register_step("测试步骤")
@@ -34,4 +34,5 @@ if __name__ == "__main__":
         # cv2.waitKey(1)
         time.sleep(0.5)
     # ui_control.goto_page(page_huanjing_bless)
+
 

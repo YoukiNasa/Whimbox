@@ -230,15 +230,82 @@ class BackgroundTask:
                 # Listener 线程停止后无法再次 start，清空以便重建
                 self.mouse_listener = None
 
-    def log_to_gui(self, msg, is_error=False, type="update_ai_message"):
-        from whimbox.ingame_ui.ingame_ui import win_ingame_ui
-        if is_error:
-            msg = f"❌ {msg}\n"
+    def _resolve_session_id(self) -> str:
+        """解析后台日志/子任务应归属的会话 ID。"""
+        from whimbox.common.cvars import get_current_session_id
+        sid = get_current_session_id()
+        if sid and sid != "default":
+            return sid
+        try:
+            from whimbox.session_manager import session_manager
+            sessions = session_manager.list()
+            if sessions:
+                running = next((s for s in sessions if s.get("state") == "RUNNING"), None)
+                if running and running.get("session_id"):
+                    return running["session_id"]
+                latest = sessions[-1].get("session_id")
+                if latest:
+                    return latest
+        except Exception as e:
+            logger.debug(f"后台任务解析 session_id 失败: {e}")
+        return "default"
+
+    def log_to_gui(self, msg, is_error=False, is_stopped=False, type="update_ai_message"):
+        raw_message = msg
+        if is_stopped:
+            msg = f"🛑 {msg}"
+            level = "info"
         else:
-            msg = f"✅ {msg}\n"
-        if win_ingame_ui:
-            win_ingame_ui.update_message(msg, type)
+            if is_error:
+                msg = f"❌ {msg}"
+                level = "error"
+            else:
+                msg = f"✅ {msg}"
+                level = "info"
+
+        from whimbox.rpc_server import notify_event
+
+        session_id = self._resolve_session_id()
+        notify_event(
+            "event.run.log",
+            {
+                "session_id": session_id,
+                "run_id": f"background:{session_id}",
+                "source": "background",
+                "message": msg,
+                "raw_message": raw_message,
+                "level": level,
+                "type": type,
+            },
+        )
         logger.info(msg)
+
+    def _notify_background_status(
+        self,
+        *,
+        session_id: str,
+        phase: str,
+        tool_id: str,
+        detail: str = "",
+        result: dict | None = None,
+        error: str = "",
+    ):
+        from whimbox.rpc_server import notify_event
+
+        payload = {
+            "session_id": session_id,
+            "run_id": f"background:{session_id}:{tool_id}",
+            "source": "background",
+            "phase": phase,
+            "tool_id": tool_id,
+        }
+        if detail:
+            payload["detail"] = detail
+        if result is not None:
+            payload["result"] = result
+        if error:
+            payload["error"] = error
+        notify_event("event.run.status", payload)
 
     def stop(self):
         """停止后台任务"""
@@ -365,24 +432,64 @@ class BackgroundTask:
     
     def _execute_fishing(self):
         """执行钓鱼任务"""
+        from whimbox.common.cvars import current_session_id
+        session_id = self._resolve_session_id()
+        token = current_session_id.set(session_id)
+        tool_id = "background.auto_fishing"
+        self._notify_background_status(
+            session_id=session_id,
+            phase="started",
+            tool_id=tool_id,
+            detail="auto_fishing",
+        )
         try:
             # 停止鼠标监听，避免干扰鼠标点击
             self._stop_mouse_listener()
             self.log_to_gui("检测到钓鱼界面，开始自动钓鱼", type="add_ai_message")
-            fishing_task = FishingTask()
+            self.log_to_gui("你可以按 " + global_config.get("Whimbox", "stop_key") + " 键，随时停止钓鱼")
+            fishing_task = FishingTask(session_id=session_id)
+            # 后台钓鱼直接调用 step2，不经过 rpc_server 的 task.stop 路径，
+            # 这里显式补回停止热键绑定。
+            fishing_task.add_hotkey(global_config.get("Whimbox", "stop_key"), fishing_task.task_stop)
             fishing_task.step2()
              # 因为不是完整的task运行流程，所以手动清除current_stop_flag
             current_stop_flag.set(None)
             if fishing_task.task_result.status == STATE_TYPE_SUCCESS:
                 self.log_to_gui(f"自动钓鱼完成: {fishing_task.task_result.message}", type="finalize_ai_message")
+                self._notify_background_status(
+                    session_id=session_id,
+                    phase="completed",
+                    tool_id=tool_id,
+                    result={"status": "success", "message": str(fishing_task.task_result.message or "")},
+                )
             elif fishing_task.task_result.status == STATE_TYPE_STOP:
-                self.log_to_gui(f"手动停止钓鱼", type="finalize_ai_message")
+                self.log_to_gui(f"手动停止钓鱼", is_stopped=True, type="finalize_ai_message")
+                self._notify_background_status(
+                    session_id=session_id,
+                    phase="cancelled",
+                    tool_id=tool_id,
+                    result={"status": "stop", "message": str(fishing_task.task_result.message or "手动停止")},
+                )
                 time.sleep(5) # 等待5秒，避免又检测到钓鱼界面，又开始自动钓鱼
             else:
                 self.log_to_gui(f"自动钓鱼失败: {fishing_task.task_result.message}", type="finalize_ai_message")
+                self._notify_background_status(
+                    session_id=session_id,
+                    phase="error",
+                    tool_id=tool_id,
+                    result={"status": "failed", "message": str(fishing_task.task_result.message or "自动钓鱼失败")},
+                    error=str(fishing_task.task_result.message or "自动钓鱼失败"),
+                )
         except Exception as e:
             logger.error(f"自动钓鱼出错: {e}")
+            self._notify_background_status(
+                session_id=session_id,
+                phase="error",
+                tool_id=tool_id,
+                error=str(e),
+            )
         finally:
+            current_session_id.reset(token)
             self._start_mouse_listener()
 
     def _detect_dialogue_opportunity(self, cap) -> bool:
@@ -394,10 +501,53 @@ class BackgroundTask:
     
     def _execute_dialogue(self):
         """执行对话任务"""
-        # self.log_to_gui("检测到对话界面，开始自动对话", type="add_ai_message")
-        skip_dialog_task = SkipDialogTask()
-        skip_dialog_task.task_run()
-        # self.log_to_gui(f"自动对话结束", type="finalize_ai_message")
+        from whimbox.common.cvars import current_session_id
+        session_id = self._resolve_session_id()
+        token = current_session_id.set(session_id)
+        tool_id = "background.auto_dialogue"
+        self._notify_background_status(
+            session_id=session_id,
+            phase="started",
+            tool_id=tool_id,
+            detail="auto_dialogue",
+        )
+        try:
+            # self.log_to_gui("检测到对话界面，开始自动对话", type="add_ai_message")
+            skip_dialog_task = SkipDialogTask(session_id=session_id)
+            skip_dialog_task.task_run()
+            # self.log_to_gui(f"自动对话结束", type="finalize_ai_message")
+            if skip_dialog_task.task_result.status == STATE_TYPE_STOP:
+                self._notify_background_status(
+                    session_id=session_id,
+                    phase="cancelled",
+                    tool_id=tool_id,
+                    result={"status": "stop", "message": str(skip_dialog_task.task_result.message or "手动停止")},
+                )
+            elif skip_dialog_task.task_result.status == STATE_TYPE_SUCCESS:
+                self._notify_background_status(
+                    session_id=session_id,
+                    phase="completed",
+                    tool_id=tool_id,
+                    result={"status": "success", "message": str(skip_dialog_task.task_result.message or "")},
+                )
+            else:
+                self._notify_background_status(
+                    session_id=session_id,
+                    phase="error",
+                    tool_id=tool_id,
+                    result={"status": "failed", "message": str(skip_dialog_task.task_result.message or "自动对话失败")},
+                    error=str(skip_dialog_task.task_result.message or "自动对话失败"),
+                )
+        except Exception as e:
+            self._notify_background_status(
+                session_id=session_id,
+                phase="error",
+                tool_id=tool_id,
+                error=str(e),
+            )
+            raise
+        finally:
+            current_session_id.reset(token)
 
     def _detect_pickup_opportunity(self, cap) -> bool:
         """检测是否可以采集"""

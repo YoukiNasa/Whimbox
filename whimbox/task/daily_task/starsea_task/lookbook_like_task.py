@@ -1,4 +1,4 @@
-"""
+﻿"""
 星绘图册点赞
 """
 
@@ -9,8 +9,8 @@ from whimbox.interaction.interaction_core import itt
 from whimbox.common.utils.ui_utils import *
 
 class LookbookLikeTask(TaskTemplate):
-    def __init__(self):
-        super().__init__("lookbook_like_task")
+    def __init__(self, session_id):
+        super().__init__(session_id=session_id, name="lookbook_like_task")
 
     @register_step("打开星绘图册")
     def step1(self):
@@ -35,5 +35,6 @@ class LookbookLikeTask(TaskTemplate):
         back_to_page_main()
 
 if __name__ == "__main__":
-    lookbook_like_task = LookbookLikeTask()
+    lookbook_like_task = LookbookLikeTask(session_id="debug")
     lookbook_like_task.task_run()
+

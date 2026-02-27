@@ -1,4 +1,4 @@
-'''领取大月卡奖励'''
+﻿'''领取大月卡奖励'''
 from whimbox.task.task_template import *
 from whimbox.ui.ui import ui_control
 from whimbox.ui.page_assets import *
@@ -6,8 +6,8 @@ import time
 from whimbox.common.utils.ui_utils import *
 
 class MonthlyPassTask(TaskTemplate):
-    def __init__(self):
-        super().__init__("monthly_pass_task")
+    def __init__(self, session_id):
+        super().__init__(session_id=session_id, name="monthly_pass_task")
 
     @register_step("打开奇迹之旅")
     def step1(self):
@@ -34,6 +34,7 @@ class MonthlyPassTask(TaskTemplate):
         ui_control.goto_page(page_main)
 
 if __name__ == "__main__":
-    task = MonthlyPassTask()
+    task = MonthlyPassTask(session_id="debug")
     result = task.task_run()
     print(result.to_dict())
+

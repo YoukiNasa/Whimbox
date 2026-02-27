@@ -1,11 +1,11 @@
-from whimbox.task.task_template import *
+﻿from whimbox.task.task_template import *
 from whimbox.interaction.interaction_core import itt
 from whimbox.common.utils.ui_utils import*
 from whimbox.ui.ui_assets import *
 
 class PickupBottleTask(TaskTemplate):
-    def __init__(self):
-        super().__init__("pickup_bottle_task")
+    def __init__(self, session_id):
+        super().__init__(session_id=session_id, name="pickup_bottle_task")
         self.material_count_dict = {"漂流瓶": 0}
     
     @register_step("拾取漂流瓶")

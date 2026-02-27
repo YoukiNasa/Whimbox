@@ -1,10 +1,10 @@
-from whimbox.interaction.interaction_core import itt
+﻿from whimbox.interaction.interaction_core import itt
 from whimbox.action.material_track_base import MaterialTrackBaseTask
 from whimbox.common.utils.ui_utils import *
 
 class CatchInsectTask(MaterialTrackBaseTask):
-    def __init__(self, insect_name, expected_count=1):
-        super().__init__(insect_name, expected_count)
+    def __init__(self, session_id, insect_name, expected_count=1):
+        super().__init__(session_id, insect_name, expected_count)
 
     def pre_play_func(self):
         pass
@@ -20,6 +20,7 @@ if __name__ == "__main__":
     itt.key_press("esc")
     time.sleep(0.5)
     calibrate_view_rotation_ratio()
-    task = CatchInsectTask("发卡蚱蜢", 1)
+    task = CatchInsectTask(session_id="debug", insect_name="发卡蚱蜢", expected_count=1)
     # task.task_run()
     task.step3()
+

@@ -1,4 +1,4 @@
-from whimbox.task.task_template import TaskTemplate, register_step
+﻿from whimbox.task.task_template import TaskTemplate, register_step
 from whimbox.common.logger import logger
 from whimbox.common.scripts_manager import *
 from whimbox.common.utils.utils import save_json
@@ -14,8 +14,8 @@ import os
 class RecordMacroTask(TaskTemplate):
     """记录键鼠操作的任务"""
     
-    def __init__(self):
-        super().__init__("record_macro_task")
+    def __init__(self, session_id):
+        super().__init__(session_id=session_id, name="record_macro_task")
         self.steps = []
         
         # 录制状态
@@ -297,5 +297,6 @@ class RecordMacroTask(TaskTemplate):
         pass
 
 if __name__ == "__main__":
-    task = RecordMacroTask()
+    task = RecordMacroTask(session_id="debug")
     task.task_run()
+

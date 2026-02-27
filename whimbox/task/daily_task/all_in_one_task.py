@@ -1,4 +1,4 @@
-'''朝夕心愿一条龙'''
+﻿'''朝夕心愿一条龙'''
 
 from whimbox.task.task_template import *
 from whimbox.task import daily_task
@@ -11,8 +11,8 @@ from whimbox.common.handle_lib import HANDLE_OBJ
 from whimbox.task.daily_task.xinghai_run_task import XinghaiRunTask
 
 class AllInOneTask(TaskTemplate):
-    def __init__(self):
-        super().__init__("all_in_one_task")
+    def __init__(self, session_id):
+        super().__init__(session_id=session_id, name="all_in_one_task")
         self.zhaoxi_todo_list = []
         self.task_result_list = {
             'dig_task': False,
@@ -26,21 +26,22 @@ class AllInOneTask(TaskTemplate):
 
     @register_step("自动启动游戏")
     def step0(self):
-        start_game_task = StartGameTask()
+        start_game_task = StartGameTask(session_id=self.session_id)
         task_result = start_game_task.task_run()
         if task_result.status == STATE_TYPE_SUCCESS:
             _, width, height = HANDLE_OBJ.check_shape()
             if width > 2560 or width < 1920:
-                msg = f"当前游戏分辨率：{width}x{height}。推荐分辨率为：1920x1080或1920x1200或2560x1440或2560x1600。如遇到bug，请修改游戏分辨率后重试"
+                msg = f"❗当前游戏分辨率：{width}x{height}。推荐使用1920x1080或1920x1200或2560x1440或2560x1600分辨率，窗口模式。如遇到bug，请修改游戏分辨率和显示模式后重试"
                 self.log_to_gui(msg)
             return "step1"
         else:
+            self.update_task_result(STATE_TYPE_FAILED, task_result.message)
             return STEP_NAME_FINISH
 
 
     @register_step("美鸭梨挖掘")
     def step1(self):
-        dig_task = daily_task.DigTaskV2()
+        dig_task = daily_task.DigTaskV2(session_id=self.session_id)
         task_result = dig_task.task_run()
         self.task_result_list['dig_task'] = task_result.status == STATE_TYPE_SUCCESS
         self.log_to_gui("检查是否在家园")
@@ -53,37 +54,37 @@ class AllInOneTask(TaskTemplate):
 
     @register_step("检查周本进度")
     def step2(self):
-        weekly_realm_task = daily_task.WeeklyRealmTask()
+        weekly_realm_task = daily_task.WeeklyRealmTask(session_id=self.session_id)
         task_result = weekly_realm_task.task_run()
         self.task_result_list['weekly_realm_task'] = task_result.status == STATE_TYPE_SUCCESS
 
     @register_step("开始完成朝夕心愿")
     def step3(self):
-        zhaoxi_task = daily_task.ZhaoxiTask()
+        zhaoxi_task = daily_task.ZhaoxiTask(session_id=self.session_id)
         task_result = zhaoxi_task.task_run()
         self.task_result_list['zhaoxi_task'] = task_result.status == STATE_TYPE_SUCCESS
     
     @register_step("收集星光结晶")
     def step4(self):
-        xinghai_run_task = XinghaiRunTask()
+        xinghai_run_task = XinghaiRunTask(session_id=self.session_id)
         task_result = xinghai_run_task.task_run()
         self.task_result_list['xinghai_run_task'] = task_result.status == STATE_TYPE_SUCCESS
 
     @register_step("开始完成星海拾光")
     def step5(self):
-        xinghai_task = daily_task.XinghaiTask()
+        xinghai_task = daily_task.XinghaiTask(session_id=self.session_id)
         task_result = xinghai_task.task_run()
         self.task_result_list['xinghai_task'] = task_result.status == STATE_TYPE_SUCCESS
 
     @register_step("开始完成奇迹之冠巅峰赛")
     def step6(self):
-        mira_crown_task = MiraCrownTask()
+        mira_crown_task = MiraCrownTask(session_id=self.session_id)
         task_result = mira_crown_task.task_run()
         self.task_result_list['mira_crown_task'] = task_result.status == STATE_TYPE_SUCCESS
 
     @register_step("领取奇迹之旅奖励")
     def step7(self):
-        monthly_pass_task = daily_task.MonthlyPassTask()
+        monthly_pass_task = daily_task.MonthlyPassTask(session_id=self.session_id)
         task_result = monthly_pass_task.task_run()
         self.task_result_list['monthly_pass_task'] = task_result.status == STATE_TYPE_SUCCESS
 
@@ -130,7 +131,7 @@ class AllInOneTask(TaskTemplate):
 
 
 if __name__ == "__main__":
-    task = AllInOneTask()
+    task = AllInOneTask(session_id="debug")
     # result = task.task_run()
     # print(result.to_dict())
     task.step3()

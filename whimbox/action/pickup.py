@@ -1,4 +1,4 @@
-from whimbox.task.task_template import TaskTemplate, register_step
+﻿from whimbox.task.task_template import TaskTemplate, register_step
 from whimbox.interaction.interaction_core import itt
 from whimbox.ui.ui_assets import *
 from whimbox.common.utils.utils import is_chinese
@@ -7,8 +7,8 @@ from whimbox.common.utils.ui_utils import wait_until_appear
 import time, re
 
 class PickupTask(TaskTemplate):
-    def __init__(self):
-        super().__init__("pickup_task")
+    def __init__(self, session_id):
+        super().__init__(session_id=session_id, name="pickup_task")
         self.material_count_dict = {}
 
     @register_step("开始采集")
@@ -54,5 +54,5 @@ class PickupTask(TaskTemplate):
 
 if __name__ == "__main__":
     while True:
-        pickup_task = PickupTask()
+        pickup_task = PickupTask(session_id="debug")
         pickup_task.task_run()

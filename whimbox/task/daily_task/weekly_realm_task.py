@@ -1,4 +1,4 @@
-# 每周幻境
+﻿# 每周幻境
 
 from whimbox.task.task_template import *
 from whimbox.ui.page_assets import page_daily_task, page_huanjing_weekly
@@ -8,9 +8,9 @@ from whimbox.ui.ui_assets import *
 from whimbox.common.utils.ui_utils import *
 
 class WeeklyRealmTask(TaskTemplate):
-    def __init__(self):
-        super().__init__("weekly_realm_task")
-        realm_target = global_config.get("Game", "realm_target")
+    def __init__(self, session_id):
+        super().__init__(session_id=session_id, name="weekly_realm_task")
+        realm_target = global_config.get("OneDragon", "realm_target")
         if realm_target == "全部":
             self.realm_target = ["奇格格达", "卷卷"]
         elif realm_target == "不做周本":
@@ -73,6 +73,8 @@ class WeeklyRealmTask(TaskTemplate):
         self.update_task_result(message="每周幻境已完成", data=True)
 
 if __name__ == "__main__":
-    task = WeeklyRealmTask()
+    task = WeeklyRealmTask(session_id="debug")
     task_result = task.task_run()
     print(task.task_result)
+
+

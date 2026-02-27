@@ -11,36 +11,24 @@
         "ocr": {
             "value": "rapid",
             "description": "OCR引擎，可选：rapid"
-        },
-        "windows_pos_x": {
-            "value": "10",
-            "description": "UI窗口在屏幕上的绝对水平位置（像素）"
-        },
-        "windows_pos_y": {
-            "value": "10",
-            "description": "UI窗口在屏幕上的绝对垂直位置（像素）"
-        },
-        "ui_width": {
-            "value": "500",
-            "description": "UI窗口的宽度（像素）"
-        },
-        "ui_height": {
-            "value": "600",
-            "description": "UI窗口的高度（像素）"
         }
     },
-    "Path":{
+    "Whimbox":{
+        "stop_key": {
+            "value": "/",
+            "description": "停止任务/显示小窗 的快捷键"
+        },
         "launcher_path": {
             "value": "",
             "description": "叠纸启动器路径(launcher.exe的完整路径)"
         },
         "high_performance_pc": {
             "value": "false",
-            "description": "启用高性能模式(加快识别速度，电脑性能不足时，可能会变卡，请自行测试开启)"
+            "description": "启用高性能模式(加快识别速度，可能电脑会变卡)"
         },
         "enable_windows_notification": {
             "value": "false",
-            "description": "一条龙完成是否发送Windows通知"
+            "description": "一条龙完成后发送Windows通知"
         }
     },
     "BackgroundTask": {
@@ -83,7 +71,7 @@
             "description": "API密钥(api_key)"
         }
     },
-    "Game": {
+    "OneDragon": {
         "energy_cost": {
             "value": "素材激化幻境",
             "description": "默认消耗体力的幻境"

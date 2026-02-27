@@ -196,13 +196,13 @@ class AbilityManager:
         key = self.ability_keymap.get(ability_name, None)
         if key is None:
             # 如果没配置，根据配置文件，配置到对应的方案和键位
-            ability_plan = global_config.get_int('Game', 'ability_plan')
+            ability_plan = global_config.get_int("OneDragon", "ability_plan")
             self._change_ability_plan(ability_plan)
             itt.wait_until_stable(threshold=0.99)
             self._check_ability_keymap()
             key = self.ability_keymap.get(ability_name, None)
             if key is None:
-                ability_key = str(global_config.get_int('Game', 'ability_key'))
+                ability_key = str(global_config.get_int("OneDragon", "ability_key"))
                 if self._set_ability(ability_name, ability_key):
                     key = ability_key
                 else:
@@ -218,27 +218,15 @@ class AbilityManager:
             return True
         else:
             return False
-
-    def check_subability_active(self):
-        cap = itt.capture(anchor_posi=AreaSubAbilityButton.position)
-        lower = [0, 80, 200]
-        upper = [30, 110, 255]
-        px_count = count_px_with_hsv_limit(cap, lower, upper)
-        # 只靠px_count不太能确定，最好通过技能开启前后的px_count变化来确定
-        if px_count > 200:
-            return True, px_count
-        return False, px_count
+        
 
 ability_manager = AbilityManager()
 
 
 if __name__ == "__main__":
     # CV_DEBUG_MODE = True
-    # ability_manager.change_ability(ABILITY_NAME_SHAPESHIFTING)
-    # print(ability_manager.get_current_ability())
+    # ability_manager.change_ability(ABILITY_NAME_INSECT)
+    print(ability_manager.get_current_ability())
     # ability_manager._check_jump_ability()
     # ability_manager._check_ability_keymap()
     # print(ability_manager.ability_keymap)
-    while True:
-        ability_manager.is_subability_active()
-        time.sleep(1)

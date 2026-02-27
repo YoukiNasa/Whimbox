@@ -2,9 +2,10 @@ from whimbox.common.logger import logger
 from whimbox.common.utils.ui_utils import back_to_page_main
 from whimbox.common.cvars import (
     current_stop_flag, 
-    get_current_stop_flag,
     set_foreground_task_running
 )
+from whimbox.config.config import global_config
+from whimbox.common.cvars import get_current_run_id
 
 from pynput import keyboard
 import time
@@ -54,8 +55,12 @@ class TaskResult:
         return f"{{'status': {self.status}, 'message': {self.message}}}"
 
 class TaskTemplate:
-    def __init__(self, name=""):
+    def __init__(self, *, session_id: str, name: str = ""):
+        if not session_id:
+            raise ValueError(f"{self.__class__.__name__} requires non-empty session_id")
         self.name = name
+        self.session_id = session_id
+        self.show_stop_key_message = True
         
         # 尝试从 context 获取父任务的 stop_flag
         stop_flag = current_stop_flag.get()
@@ -88,8 +93,6 @@ class TaskTemplate:
             self.listener = keyboard.Listener(on_press=self._on_key_press)
             self.listener.daemon = True  # 设为守护线程
             self.listener.start()
-            # 添加默认停止热键
-            self.add_hotkey("/", self.task_stop)
         else:
             self.key_callbacks = None
             self.listener = None
@@ -113,6 +116,7 @@ class TaskTemplate:
         """添加热键监听（仅在顶层任务中有效）"""
         if self.key_callbacks is None:
             return
+        key_str = key_str.strip()
         # 将字符串键转换为pynput键对象
         if len(key_str) == 1:  # 单个字符
             self.key_callbacks[key_str] = callback
@@ -123,6 +127,15 @@ class TaskTemplate:
                 self.key_callbacks[key_obj] = callback
             except AttributeError:
                 logger.warning(f"无法识别的键: {key_str}")
+
+    def _get_stop_hotkey(self) -> str:
+        try:
+            key = global_config.get("Whimbox", "stop_key")
+            if isinstance(key, str) and key.strip():
+                return key.strip()
+        except Exception:
+            pass
+        return "/"
 
 
     def __auto_register_steps(self):
@@ -153,6 +166,8 @@ class TaskTemplate:
             # 如果是顶层任务，设置前台任务运行标志
             if self.is_top_level_task:
                 set_foreground_task_running(True)
+                if self.show_stop_key_message:
+                    self.log_to_gui("你可以按 " + self._get_stop_hotkey() + " 键，随时停止任务")
             
             res = self._task_run()
             if res.status in [STATE_TYPE_SUCCESS, STATE_TYPE_STOP, STATE_TYPE_FAILED]:
@@ -216,19 +231,16 @@ class TaskTemplate:
 
         except Exception as e:
             self.handle_exception(e)
-            self.error_step.state.msg = str(e)
-            self.current_step = self.error_step
-            self.update_task_result(status=STATE_TYPE_ERROR, message=self.error_step.state.msg)
-            logger.error(traceback.format_exc())
+            if self.stop_flag.is_set():
+                self.update_task_result(status=STATE_TYPE_STOP, message="任务已停止")
+            else:
+                self.error_step.state.msg = str(e)
+                self.current_step = self.error_step
+                self.update_task_result(status=STATE_TYPE_ERROR, message=self.error_step.state.msg)
+                logger.error(traceback.format_exc())
         
         finally:
             self.handle_finally()
-            # 显示任务结果
-            if self.task_result.message:
-                if self.task_result.status == STATE_TYPE_SUCCESS:
-                    self.log_to_gui(self.task_result.message)
-                else:
-                    self.log_to_gui(self.task_result.message, is_error=True)
             return self.task_result
 
 
@@ -249,13 +261,13 @@ class TaskTemplate:
         '''如果子类有自己额外的停止代码，就实现这个方法，并调用父类的这个方法'''
         if not self.stop_flag.is_set():
             self.stop_flag.set()
-        self.update_task_result(status=STATE_TYPE_STOP, message=message or "停止任务", data=data)
+        self.update_task_result(status=STATE_TYPE_STOP, message=message or "任务已停止", data=data)
         logger.info(f"停止任务: {self.name}")
 
     def need_stop(self):
         if self.stop_flag.is_set():
             if self.task_result.status != STATE_TYPE_STOP:
-                self.update_task_result(status=STATE_TYPE_STOP)
+                self.update_task_result(status=STATE_TYPE_STOP, message="任务已停止")
             return True
         else:
             return False
@@ -265,14 +277,36 @@ class TaskTemplate:
         return self.current_step.state.msg if self.current_step else ""
 
 
-    def log_to_gui(self, msg, is_error=False, type="update_ai_message"):
-        if not is_error:
-            msg = f"✅ {msg}\n"
+    def log_to_gui(self, msg, is_error=False, is_stopped=False, is_loading=False, type="update_ai_message"):
+        raw_message = msg
+        if is_stopped:
+            msg = f"🛑 {msg}"
+            level = "info"
+        elif is_loading:
+            msg = f"⏳ {msg}"
+            level = "info"
         else:
-            msg = f"❌ {msg}\n"
-        from whimbox.ingame_ui.ingame_ui import win_ingame_ui
-        if win_ingame_ui:
-            win_ingame_ui.update_message(msg, type)
+            if not is_error:
+                msg = f"✅ {msg}"
+                level = "info"
+            else:
+                msg = f"❌ {msg}"
+                level = "error"
+
+        from whimbox.rpc_server import notify_event
+
+        notify_event(
+            "event.run.log",
+            {
+                "session_id": self.session_id,
+                "run_id": get_current_run_id(),
+                "source": "task",
+                "message": msg,
+                "raw_message": raw_message,
+                "level": level,
+                "type": type,
+            },
+        )
         logger.info(msg)
 
 

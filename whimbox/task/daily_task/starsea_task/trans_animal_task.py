@@ -1,11 +1,11 @@
-from whimbox.task.task_template import *
+﻿from whimbox.task.task_template import *
 from whimbox.interaction.interaction_core import itt
 from whimbox.common.utils.ui_utils import*
 from whimbox.ui.ui_assets import *
 
 class TransAnimalTask(TaskTemplate):
-    def __init__(self, times=1):
-        super().__init__("trans_animal_task")
+    def __init__(self, session_id, times=1):
+        super().__init__(session_id=session_id, name="trans_animal_task")
         self.times = times
     
     @register_step("变身动物")
@@ -24,6 +24,7 @@ class TransAnimalTask(TaskTemplate):
             return STEP_NAME_FINISH
 
 if __name__ == "__main__":
-    trans_animal_task = TransAnimalTask(times=3)
+    trans_animal_task = TransAnimalTask(session_id="debug", times=3)
     result = trans_animal_task.task_run()
     print(result)
+

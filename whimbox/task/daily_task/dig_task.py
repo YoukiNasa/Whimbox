@@ -1,4 +1,4 @@
-"""
+﻿"""
 美鸭梨挖掘
 """
 
@@ -37,12 +37,12 @@ material_type_dict = {
 
 
 class DigTask(TaskTemplate):
-    def __init__(self, target_item_list=None):
-        super().__init__("dig_task")
+    def __init__(self, session_id, target_item_list=None):
+        super().__init__(session_id=session_id, name="dig_task")
         if target_item_list:
             self.target_item_list = target_item_list
         else:
-            self.target_item_list = global_config.get("Game", "meiyali_dig").split("|")
+            self.target_item_list = global_config.get("OneDragon", "meiyali_dig").split("|")
         self.is_gather_success = False
     
     @register_step("正在前往美鸭梨挖掘")
@@ -136,5 +136,6 @@ class DigTask(TaskTemplate):
         back_to_page_main()
 
 if __name__ == "__main__":
-    dig_task = DigTask()
+    dig_task = DigTask(session_id="debug")
     dig_task.task_run()
+

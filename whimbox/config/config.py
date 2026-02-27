@@ -209,6 +209,10 @@ class GlobalConfig:
             'value': value,
             'description': description
         }
+        # 如果更新了键位设置，就要update一下
+        if section == "Keybinds":
+            from whimbox.common.keybind import keybind
+            keybind.update_keybind()
 
     def save(self) -> bool:
         """保存配置到文件"""
@@ -227,4 +231,4 @@ class GlobalConfig:
 global_config = GlobalConfig()
 
 if __name__ == "__main__":
-    print(global_config.get("Game", "energy_cost"))
+    print(global_config.get("OneDragon", "energy_cost"))

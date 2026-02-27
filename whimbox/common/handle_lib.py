@@ -1,6 +1,9 @@
 import psutil
+import ctypes
+import win32api
 import win32gui, win32process, win32con
 from whimbox.common.cvars import PROCESS_NAME
+from whimbox.common.logger import logger
 
 def get_hwnd_for_pid(pid):
     hwnds = []
@@ -53,11 +56,82 @@ class ProcessHandler():
         return win32gui.IsIconic(self.handle)
 
     def set_foreground(self):
-        if self.is_alive():
-            # 如果窗口被最小化，先恢复显示
-            if win32gui.IsIconic(self.handle):
-                win32gui.ShowWindow(self.handle, win32con.SW_RESTORE)
-            win32gui.SetForegroundWindow(self.handle)
+        def _activate_window(hwnd):
+            # 先把窗口恢复到可见状态
+            if win32gui.IsIconic(hwnd):
+                win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
+            else:
+                win32gui.ShowWindow(hwnd, win32con.SW_SHOW)
+
+            fg_hwnd = win32gui.GetForegroundWindow()
+            current_tid = win32api.GetCurrentThreadId()
+            target_tid, _ = win32process.GetWindowThreadProcessId(hwnd)
+            fg_tid = 0
+            if fg_hwnd:
+                fg_tid, _ = win32process.GetWindowThreadProcessId(fg_hwnd)
+
+            attached_fg = False
+            attached_target = False
+            try:
+                if fg_tid and fg_tid != current_tid:
+                    win32process.AttachThreadInput(current_tid, fg_tid, True)
+                    attached_fg = True
+                if target_tid and target_tid != current_tid:
+                    win32process.AttachThreadInput(current_tid, target_tid, True)
+                    attached_target = True
+
+                win32gui.BringWindowToTop(hwnd)
+                win32gui.SetForegroundWindow(hwnd)
+                win32gui.SetActiveWindow(hwnd)
+                win32gui.SetFocus(hwnd)
+            finally:
+                if attached_target:
+                    win32process.AttachThreadInput(current_tid, target_tid, False)
+                if attached_fg:
+                    win32process.AttachThreadInput(current_tid, fg_tid, False)
+
+        try:
+            if not self.is_alive():
+                raise Exception("游戏窗口不存在")
+
+            _activate_window(self.handle)
+            if self.is_foreground():
+                return
+
+            # 某些系统会拦截首次前置，做一次顶置切换重试
+            win32gui.SetWindowPos(
+                self.handle,
+                win32con.HWND_TOPMOST,
+                0,
+                0,
+                0,
+                0,
+                win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_SHOWWINDOW,
+            )
+            win32gui.SetWindowPos(
+                self.handle,
+                win32con.HWND_NOTOPMOST,
+                0,
+                0,
+                0,
+                0,
+                win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_SHOWWINDOW,
+            )
+            _activate_window(self.handle)
+            if self.is_foreground():
+                return
+
+            # Alt 键兜底（Windows 前台策略允许用户输入后切前台）
+            user32 = ctypes.windll.user32
+            user32.keybd_event(win32con.VK_MENU, 0, 0, 0)
+            user32.keybd_event(win32con.VK_MENU, 0, win32con.KEYEVENTF_KEYUP, 0)
+            _activate_window(self.handle)
+            if self.is_foreground():
+                return
+            raise Exception("无法将游戏窗口前置，被系统策略阻止")
+        except Exception as e:
+            logger.error(e)
+            raise Exception("游戏窗口前置失败")
     
     def is_alive(self):
         if not self.handle:

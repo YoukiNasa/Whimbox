@@ -1,4 +1,4 @@
-'''奇迹之冠'''
+﻿'''奇迹之冠'''
 from whimbox.common.utils.ui_utils import *
 from whimbox.task.task_template import *
 from whimbox.ui.ui import ui_control
@@ -9,8 +9,8 @@ from whimbox.interaction.interaction_core import itt
 import time
 
 class MiraCrownTask(TaskTemplate):
-    def __init__(self, force_start=False):
-        super().__init__("mira_crown_task")
+    def __init__(self, session_id, force_start=False):
+        super().__init__(session_id=session_id, name="mira_crown_task")
         self.force_start = force_start
         self.is_quick_reward = False
     
@@ -36,7 +36,8 @@ class MiraCrownTask(TaskTemplate):
         AreaMiraCrownOverview.click()
         itt.wait_until_stable(0.95)
         AreaMiraCrownEntrance.click()
-        itt.delay(3, comment="等待巅峰赛跳关结束")
+        itt.wait_until_stable(0.95)
+        wait_until_appear_then_click(ButtonMiraCrownRank, retry_time=1)
         if wait_until_appear_then_click(ButtonMiraCrownQuickReward):
             itt.delay(5, comment="等待奖励弹出")
             skip_get_award()
@@ -44,9 +45,9 @@ class MiraCrownTask(TaskTemplate):
     
     @register_step("进入挑战")
     def step3(self):
-        itt.wait_until_stable(0.95)
-        if wait_until_appear_then_click(ButtonMiraCrownRank, retry_time=1):
-            itt.wait_until_stable(0.95)
+        # itt.wait_until_stable(0.95)
+        # if wait_until_appear_then_click(ButtonMiraCrownRank, retry_time=1):
+        #     itt.wait_until_stable(0.95)
         # 如果是快速奖励进来的，要从第二个门进去（第三个门是锁住的），不然从第三个门进去
         if not self.is_quick_reward:
             AreaMiraCrownThirdDoor.click()
@@ -122,6 +123,7 @@ class MiraCrownTask(TaskTemplate):
 
 
 if __name__ == "__main__":
-    task = MiraCrownTask(force_start=True)
+    task = MiraCrownTask(session_id="debug", force_start=True)
     result = task.task_run()
     print(result.to_dict())
+

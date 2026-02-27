@@ -112,7 +112,7 @@ class ScriptsManager:
                             logger.error(f"读取脚本文件{file_path}失败: {e}")
                             continue
 
-    def query_path(self, path_name=None, target=None, type=None, count=None, return_one=False, show_default=False) -> list[PathRecord] | PathRecord | None:
+    def query_path(self, path_name=None, name=None, target=None, type=None, count=None, return_one=False, show_default=False) -> list[PathRecord] | PathRecord | None:
         # 指定名字就直接返回单文件（用于内部固定路线的任务使用，比如每日任务）
         if path_name:
             return self.path_dict.get(path_name, None)
@@ -124,6 +124,10 @@ class ScriptsManager:
             
             if (not show_default) and (path_record.info.name.startswith("朝夕心愿_") or path_record.info.name.startswith("星海拾光_")):
                 match = False
+
+            if name is not None:
+                if name.lower() not in path_record.info.name.lower():
+                    match = False
 
             # Filter by target (exact match)
             if target is not None:
@@ -147,6 +151,47 @@ class ScriptsManager:
             return res[0] if res else None
         else:
             return res
+
+    def _is_macro_type(self, script_type: Optional[str]) -> bool:
+        return script_type in ("宏", "乐谱")
+
+    def _find_script_files_by_name(self, script_name: str, is_macro: bool) -> list[str]:
+        """
+        递归查找指定名称的脚本文件。
+
+        Args:
+            script_name: 脚本名称
+            is_macro: True 查找宏/乐谱，False 查找跑图路线
+        """
+        target_filepaths: list[str] = []
+        for root, _, files in os.walk(SCRIPT_PATH):
+            for file in files:
+                if not file.endswith(".json"):
+                    continue
+
+                file_path = os.path.join(root, file)
+                try:
+                    with open(file_path, "r", encoding="utf-8") as f:
+                        script_data = json.load(f)
+                except (json.JSONDecodeError, KeyError, TypeError):
+                    # 跳过格式错误的文件
+                    continue
+                except Exception as e:
+                    logger.warning(f"Failed to read file {file_path}: {e}")
+                    continue
+
+                info = script_data.get("info", {})
+                if info.get("name") != script_name:
+                    continue
+
+                script_type = info.get("type")
+                if is_macro and not self._is_macro_type(script_type):
+                    continue
+                if not is_macro and self._is_macro_type(script_type):
+                    continue
+                target_filepaths.append(file_path)
+
+        return target_filepaths
     
     def delete_path(self, path_name: str) -> int:
         """
@@ -167,26 +212,8 @@ class ScriptsManager:
             return 0
         
         try:
-            target_filepath = []
-            for file in os.listdir(SCRIPT_PATH):
-                if not file.endswith(".json"):
-                    continue
-                
-                file_path = os.path.join(SCRIPT_PATH, file)
-                try:
-                    with open(file_path, "r", encoding="utf-8") as f:
-                        try:
-                            path_data = json.load(f)
-                            # 检查路线名是否匹配
-                            if path_data.get("info", {}).get("name") == path_name:
-                                target_filepath.append(file_path)
-                        except (json.JSONDecodeError, KeyError, TypeError):
-                            # 跳过格式错误的文件
-                            continue
-                except Exception as e:
-                    logger.warning(f"Failed to read file {file}: {e}")
-                    continue
-            
+            target_filepath = self._find_script_files_by_name(path_name, is_macro=False)
+
             # 删除成功后，重新初始化路径字典
             deleted_count = 0
             for file_path in target_filepath:
@@ -297,26 +324,8 @@ class ScriptsManager:
             return 0
         
         try:
-            target_filepath = []
-            for file in os.listdir(SCRIPT_PATH):
-                if not file.endswith(".json"):
-                    continue
-                
-                file_path = os.path.join(SCRIPT_PATH, file)
-                try:
-                    with open(file_path, "r", encoding="utf-8") as f:
-                        try:
-                            macro_data = json.load(f)
-                            # 检查宏名是否匹配
-                            if macro_data.get("info", {}).get("name") == macro_name:
-                                target_filepath.append(file_path)
-                        except (json.JSONDecodeError, KeyError, TypeError):
-                            # 跳过格式错误的文件
-                            continue
-                except Exception as e:
-                    logger.warning(f"Failed to read file {file}: {e}")
-                    continue
-            
+            target_filepath = self._find_script_files_by_name(macro_name, is_macro=True)
+
             # 删除成功后，重新初始化脚本字典
             deleted_count = 0
             for file_path in target_filepath:

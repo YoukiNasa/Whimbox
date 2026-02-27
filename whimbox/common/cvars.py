@@ -13,11 +13,28 @@ MCP_CONFIG = {
     "timeout": 24*60*60,    # mcp工具调用超时时间设为24小时
 }
 
+RPC_CONFIG = {
+    "host": "127.0.0.1",
+    "port": 8350,
+}
+
 # 使用 contextvars 来存储当前任务的 stop_flag
 # 这样每个任务都有独立的 stop_flag，无需在每个函数中显式传递
 current_stop_flag: contextvars.ContextVar[threading.Event] = contextvars.ContextVar(
     'current_stop_flag', 
     default=None
+)
+
+# 当前会话 ID（用于日志/状态透传）
+current_session_id: contextvars.ContextVar[str] = contextvars.ContextVar(
+    'current_session_id',
+    default="default",
+)
+
+# 当前运行 ID（用于统一 run.status / run.log 关联）
+current_run_id: contextvars.ContextVar[str] = contextvars.ContextVar(
+    'current_run_id',
+    default="",
 )
 
 def get_current_stop_flag() -> threading.Event:
@@ -31,6 +48,16 @@ def get_current_stop_flag() -> threading.Event:
         # 如果没有设置，创建一个永远不会被设置的 flag
         flag = threading.Event()
     return flag
+
+
+def get_current_session_id() -> str:
+    """获取当前上下文的 session_id"""
+    return current_session_id.get() or "default"
+
+
+def get_current_run_id() -> str:
+    """获取当前上下文的 run_id"""
+    return current_run_id.get() or ""
 
 # 全局前台任务运行标志（用于后台任务判断是否有前台任务在运行）
 _foreground_task_running = False

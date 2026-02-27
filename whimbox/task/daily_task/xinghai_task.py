@@ -1,4 +1,4 @@
-"""
+﻿"""
 检查并领取星海日常
 """
 
@@ -134,8 +134,8 @@ xhsg_task_info_list = [
 ]
 
 class XinghaiTask(TaskTemplate):
-    def __init__(self):
-        super().__init__("xinghai_task")
+    def __init__(self, session_id):
+        super().__init__(session_id=session_id, name="xinghai_task")
         self.current_score = 0
 
     @register_step("检查星海拾光完成情况")
@@ -199,18 +199,22 @@ class XinghaiTask(TaskTemplate):
     @register_step("开始做星海拾光任务")
     def step4(self):
         task_dict = {
-            XHSG_TASK_BOOKLOOK_LIKE: LookbookLikeTask(),
-            XHSG_TASK_GROUP_CHAT: AutoPathTask(path_name="星海拾光_聚会聊天"),
-            XHSG_TASK_BUBBLE_MAKE: AutoPathTask(path_name="星海拾光_制造泡泡"),
-            XHSG_TASK_PLACE_ITEM: AutoPathTask(path_name="星海拾光_放置摆饰"),
-            XHSG_TASK_CHANGE_MUSIC: AutoPathTask(path_name="星海拾光_更改音乐"),
-            XHSG_TASK_BOTTLE_PICKUP: AutoPathTask(path_name="星海拾光_拾取漂流瓶", excepted_num=1),
-            XHSG_TASK_BOTTLE_DELIVERY: AutoPathTask(path_name="星海拾光_投递漂流瓶"),
-            XHSG_TASK_TAKE_PHOTO: DailyPhotoTask(),
-            XHSG_TASK_BOTTLE_PHOTO: AutoPathTask(path_name="星海拾光_合影漂流瓶"),
-            XHSG_TASK_TRANS_ANIMAL_ONE: AutoPathTask(path_name="星海拾光_化身动物"),
-            XHSG_TASK_TRANS_ANIMAL_THREE: AutoPathTask(path_name="星海拾光_化身动物"),
-            XHSG_TASK_PLANE_PHOTO: AutoPathTask(path_name="星海拾光_合影星芒之翼"),
+            XHSG_TASK_BOOKLOOK_LIKE: LookbookLikeTask(session_id=self.session_id),
+            XHSG_TASK_GROUP_CHAT: AutoPathTask(session_id=self.session_id, path_name="星海拾光_聚会聊天"),
+            XHSG_TASK_BUBBLE_MAKE: AutoPathTask(session_id=self.session_id, path_name="星海拾光_制造泡泡"),
+            XHSG_TASK_PLACE_ITEM: AutoPathTask(session_id=self.session_id, path_name="星海拾光_放置摆饰"),
+            XHSG_TASK_CHANGE_MUSIC: AutoPathTask(session_id=self.session_id, path_name="星海拾光_更改音乐"),
+            XHSG_TASK_BOTTLE_PICKUP: AutoPathTask(
+                session_id=self.session_id,
+                path_name="星海拾光_拾取漂流瓶",
+                excepted_num=1,
+            ),
+            XHSG_TASK_BOTTLE_DELIVERY: AutoPathTask(session_id=self.session_id, path_name="星海拾光_投递漂流瓶"),
+            XHSG_TASK_TAKE_PHOTO: DailyPhotoTask(session_id=self.session_id),
+            XHSG_TASK_BOTTLE_PHOTO: AutoPathTask(session_id=self.session_id, path_name="星海拾光_合影漂流瓶"),
+            XHSG_TASK_TRANS_ANIMAL_ONE: AutoPathTask(session_id=self.session_id, path_name="星海拾光_化身动物"),
+            XHSG_TASK_TRANS_ANIMAL_THREE: AutoPathTask(session_id=self.session_id, path_name="星海拾光_化身动物"),
+            XHSG_TASK_PLANE_PHOTO: AutoPathTask(session_id=self.session_id, path_name="星海拾光_合影星芒之翼"),
         }
         self.done_task_names = [] 
         for task in self.unfinished_tasks:
@@ -256,6 +260,6 @@ class XinghaiTask(TaskTemplate):
         nikki_map.bigmap_tp(map_loc, MAP_NAME_STARSEA)
 
 if __name__ == "__main__":
-    xinghai_task = XinghaiTask()
+    xinghai_task = XinghaiTask(session_id="debug")
     # print(xinghai_task.task_run())
     xinghai_task.step2()

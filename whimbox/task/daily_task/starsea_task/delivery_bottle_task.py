@@ -1,11 +1,11 @@
-from whimbox.task.task_template import *
+﻿from whimbox.task.task_template import *
 from whimbox.interaction.interaction_core import itt
 from whimbox.common.utils.ui_utils import*
 from whimbox.ui.ui_assets import *
 
 class DeliveryBottleTask(TaskTemplate):
-    def __init__(self):
-        super().__init__("delivery_bottle_task")
+    def __init__(self, session_id):
+        super().__init__(session_id=session_id, name="delivery_bottle_task")
     
     @register_step("投递漂流瓶")
     def step1(self):
@@ -26,5 +26,6 @@ class DeliveryBottleTask(TaskTemplate):
         pass
 
 if __name__ == "__main__":
-    task = DeliveryBottleTask()
+    task = DeliveryBottleTask(session_id="debug")
     print(task.task_run())
+
