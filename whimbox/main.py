@@ -13,9 +13,9 @@ def _prepare():
         exit()
     from importlib.metadata import PackageNotFoundError, version
     try:
-        logger.info(f"奇想盒版本号: {version('whimbox')}")
+        logger.info(f"奇想盒后台版本号: {version('whimbox')}")
     except PackageNotFoundError:
-        logger.info(f"奇想盒版本号: dev")
+        logger.info(f"奇想盒后台版本号: dev")
 
 def run_whimbox():
     _prepare()
