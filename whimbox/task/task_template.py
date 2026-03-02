@@ -237,6 +237,7 @@ class TaskTemplate:
                 self.error_step.state.msg = str(e)
                 self.current_step = self.error_step
                 self.update_task_result(status=STATE_TYPE_ERROR, message=self.error_step.state.msg)
+                self.log_to_gui(self.error_step.state.msg, is_error=True)
                 logger.error(traceback.format_exc())
         
         finally:
