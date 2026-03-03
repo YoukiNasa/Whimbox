@@ -220,10 +220,16 @@ class AbilityManager:
             return False
 
     def check_subability_active(self):
-        cap = itt.capture(anchor_posi=AreaSubAbilityButton.position)
-        lower = [0, 80, 200]
-        upper = [30, 110, 255]
-        px_count = count_px_with_hsv_limit(cap, lower, upper)
+        times = 3
+        total_px_count = 0
+        for i in range(times):
+            cap = itt.capture(anchor_posi=AreaSubAbilityButton.position)
+            lower = [0, 80, 200]
+            upper = [30, 110, 255]
+            px_count = count_px_with_hsv_limit(cap, lower, upper)
+            total_px_count += px_count
+            time.sleep(0.1)
+        px_count = total_px_count / times
         # 只靠px_count不太能确定，最好通过技能开启前后的px_count变化来确定
         if px_count > 200:
             return True, px_count
