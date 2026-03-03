@@ -140,6 +140,12 @@
   "AreaMonopolyQuestion": {
     "rel_path": "imgs\\Windows\\UI\\event\\roll_dice\\AreaMonopolyQuestion.png"
   },
+  "AreaMonthlyPassTab1": {
+    "rel_path": "imgs\\Windows\\UI\\monthly_pass\\AreaMonthlyPassTab1.png"
+  },
+  "AreaMonthlyPassTab2": {
+    "rel_path": "imgs\\Windows\\UI\\monthly_pass\\AreaMonthlyPassTab2.png"
+  },
   "AreaMovementWalk": {
     "rel_path": "imgs\\Windows\\General\\AreaMovementWalk.png"
   },
@@ -148,6 +154,9 @@
   },
   "AreaPickup": {
     "rel_path": "imgs\\Windows\\General\\AreaPickup.png"
+  },
+  "AreaSubAbilityButton": {
+    "rel_path": "imgs\\Windows\\General\\AreaSubAbilityButton.png"
   },
   "AreaTextJihuatai": {
     "rel_path": "imgs\\Windows\\UI\\huanjing\\jihua\\AreaTextJihuatai.png"
@@ -167,6 +176,9 @@
   "AreaWeeklyCountText": {
     "rel_path": "imgs\\Windows\\UI\\huanjing\\weekly_realm\\AreaWeeklyCountText.png"
   },
+  "AreaXhsgRewards": {
+    "rel_path": "imgs\\Windows\\UI\\xhsg\\AreaXhsgRewards.jpg"
+  },
   "AreaXhsgScore": {
     "rel_path": "imgs\\Windows\\UI\\xhsg\\AreaXhsgScore.png"
   },
@@ -175,6 +187,9 @@
   },
   "AreaZxxyEnergy": {
     "rel_path": "imgs\\Windows\\UI\\zxxy\\AreaZxxyEnergy.png"
+  },
+  "AreaZxxyRewards": {
+    "rel_path": "imgs\\Windows\\UI\\zxxy\\AreaZxxyRewards.jpg"
   },
   "AreaZxxyScore": {
     "rel_path": "imgs\\Windows\\UI\\zxxy\\AreaZxxyScore.png"
@@ -187,6 +202,12 @@
   },
   "ArrowRotateMapAll": {
     "rel_path": "imgs\\Maps\\ArrowRotateMapAll.png"
+  },
+  "ButtonAbilityChangeList": {
+    "rel_path": "imgs\\Windows\\UI\\wardrobe\\ButtonAbilityChangeList.png"
+  },
+  "ButtonAbilityConfig": {
+    "rel_path": "imgs\\Windows\\UI\\wardrobe\\ButtonAbilityConfig.png"
   },
   "ButtonAbilitySave": {
     "rel_path": "imgs\\Windows\\UI\\wardrobe\\ButtonAbilitySave.png"
@@ -332,12 +353,6 @@
   "ButtonMonthlyPassAward": {
     "rel_path": "imgs\\Windows\\UI\\monthly_pass\\ButtonMonthlyPassAward.png"
   },
-  "ButtonMonthlyPassTab1": {
-    "rel_path": "imgs\\Windows\\UI\\monthly_pass\\ButtonMonthlyPassTab1.png"
-  },
-  "ButtonMonthlyPassTab2": {
-    "rel_path": "imgs\\Windows\\UI\\monthly_pass\\ButtonMonthlyPassTab2.png"
-  },
   "ButtonPageChatClose": {
     "rel_path": "imgs\\Windows\\UI\\ButtonPageChatClose.png"
   },
@@ -359,14 +374,8 @@
   "ButtonXhsgEntrance": {
     "rel_path": "imgs\\Windows\\UI\\xhsg\\ButtonXhsgEntrance.png"
   },
-  "ButtonXhsgRewarded": {
-    "rel_path": "imgs\\Windows\\UI\\xhsg\\ButtonXhsgRewarded.png"
-  },
   "ButtonZxxyEntrance": {
     "rel_path": "imgs\\Windows\\UI\\zxxy\\ButtonZxxyEntrance.png"
-  },
-  "ButtonZxxyRewarded": {
-    "rel_path": "imgs\\Windows\\UI\\zxxy\\ButtonZxxyRewarded.png"
   },
   "IconAbilityAnimal": {
     "rel_path": "imgs\\Windows\\UI\\wardrobe\\IconAbilityAnimal.png"
@@ -391,6 +400,9 @@
   },
   "IconAbilityInsect": {
     "rel_path": "imgs\\Windows\\UI\\wardrobe\\IconAbilityInsect.png"
+  },
+  "IconAbilityShapeshifting": {
+    "rel_path": "imgs\\Windows\\UI\\wardrobe\\IconAbilityShapeshifting.png"
   },
   "IconAbilitySmall": {
     "rel_path": "imgs\\Windows\\UI\\wardrobe\\IconAbilitySmall.png"
