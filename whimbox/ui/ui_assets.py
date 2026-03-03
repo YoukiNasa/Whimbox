@@ -152,7 +152,9 @@ ButtonWardrobeDressDIY = Button(print_log=LOG_WHEN_TRUE, anchor=ANCHOR_LEFT_CENT
 # 能力配置界面
 AreaWardrobeTab3 = Area(anchor=ANCHOR_TOP_CENTER)
 TextWardrobeAbilityTab = Text("能力配置", cap_area = AreaWardrobeTab3)
-IconAbilityFeature = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.70, gray_limit=(180, 255), anchor=ANCHOR_CENTER)
+IconAbilityFeature = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.99, anchor=ANCHOR_TOP_CENTER)
+ButtonAbilityConfig = ImgIcon(print_log=LOG_ALL, threshold=0.99, anchor=ANCHOR_BOTTOM_RIGHT)
+ButtonAbilityChangeList = Button(print_log=LOG_WHEN_TRUE, threshold=0.75, gray_limit=(250, 255), anchor=ANCHOR_TOP_RIGHT)
 IconAbilityFloat = ImgIcon()    # 泡泡套跳跃
 IconAbilityWing = ImgIcon()    # 飞鸟套跳跃
 IconAbilityAnimal = ImgIcon()    # 清洁
@@ -164,7 +166,7 @@ IconAbilityBig = ImgIcon()    # 变大
 IconAbilityStick = ImgIcon()    # 黏黏爪
 IconAbilityFlourish = ImgIcon()    # 芳间巡游
 IconAbilityShapeshifting = ImgIcon()    # 化万相
-AreaAbilityChange = Area(anchor=ANCHOR_CENTER)
+AreaAbilityChange = Area(anchor=ANCHOR_RIGHT_CENTER)
 ButtonAbilitySave = Button(print_log=LOG_WHEN_TRUE, anchor=ANCHOR_BOTTOM_RIGHT)
 AreaAbilityPlanChangeButton = Area(anchor=ANCHOR_TOP_LEFT)
 AreaAbilityPlan1Button = Area(anchor=ANCHOR_TOP_LEFT)

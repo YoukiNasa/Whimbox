@@ -69,7 +69,7 @@ class GlobalConfig:
                     else:
                         user_config[section_name][key]['description'] = config_item['description']
                         # 转换旧的按键名为新的按键名
-                        if 'value' in user_config[section_name][key]:
+                        if section_name == 'Keybinds' and 'value' in user_config[section_name][key]:
                             old_value = user_config[section_name][key]['value']
                             if old_value in key_name_mapping:
                                 user_config[section_name][key]['value'] = key_name_mapping[old_value]

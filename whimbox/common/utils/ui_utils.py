@@ -135,7 +135,7 @@ def find_game_img(game_img: GameImg, cap, threshold, scale=0.5, count=1):
         return boxes
 
 
-def scroll_find_click(area: Area, target, threshold=0, hsv_limit=None, scale=0, str_match_mode=0, click_offset=(0, 0), need_scroll=True) -> bool:
+def scroll_find_click(area: Area, target, threshold=0, hsv_limit=None, scale=0, str_match_mode=0, click_offset=(0, 0), need_scroll=True, scroll_distance=15) -> bool:
     '''
     在指定的区域内滚动，寻找并点击目标
 
@@ -148,6 +148,7 @@ def scroll_find_click(area: Area, target, threshold=0, hsv_limit=None, scale=0, 
         str_match_mode: 字符串匹配模式，0为完全匹配，1为包含匹配
         click_offset: 点击偏移量，tuple(x, y)
         need_scroll: 是否需要滚动，默认True
+        scroll_disatance: 一次滚动距离，默认15
     
     Returns:
         bool: 是否找到目标
@@ -218,14 +219,14 @@ def scroll_find_click(area: Area, target, threshold=0, hsv_limit=None, scale=0, 
             # 如果第一次没找到目标，就先把画面滚到顶，再开始寻找
             if is_first_time:
                 logger.info(f"第一次没找到目标，先把画面滚到顶")
-                cap = scroll_to_top(area)
+                cap = scroll_to_top(area, scroll_distance)
                 is_first_time = False
             else:
                 # 如果没找到目标，就把鼠标移到area的右下角，向下滚动
                 # todo: 支持expand，不过暂时没什么关系
                 scroll_posi = (area.position.x2, area.position.y2)
                 itt.move_to(scroll_posi, anchor=area.position.anchor)
-                itt.middle_scroll(-15)
+                itt.middle_scroll(-scroll_distance)
                 time.sleep(0.2)
 
                 # 如果画面不再变化，说明滚到底了
@@ -246,7 +247,7 @@ def scroll_find_click(area: Area, target, threshold=0, hsv_limit=None, scale=0, 
         return False
 
 
-def scroll_to_top(area: Area):
+def scroll_to_top(area: Area, scroll_distance=15):
     # 鼠标移到area的右下角
     # todo: 支持expand，不过暂时没什么关系
     scroll_posi = (area.position.x2, area.position.y2)
@@ -256,7 +257,7 @@ def scroll_to_top(area: Area):
         stop_flag = get_current_stop_flag()
         if stop_flag.is_set():
             return last_cap
-        itt.middle_scroll(15)
+        itt.middle_scroll(scroll_distance)
         time.sleep(0.2)
         new_cap = itt.capture(anchor_posi=area.position)
         rate = similar_img(last_cap, new_cap)
