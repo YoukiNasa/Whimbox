@@ -13,8 +13,10 @@ class PickupTask(TaskTemplate):
 
     @register_step("开始采集")
     def step1(self):
+        retry_time = 2
         while not self.need_stop():
-            if wait_until_appear(IconPickupFeature, area=AreaPickup, retry_time=1):
+            if wait_until_appear(IconPickupFeature, area=AreaPickup, retry_time=retry_time):
+                retry_time = 1
                 itt.key_press(keybind.KEYBIND_INTERACTION)
                 time.sleep(0.5) # 等待采集结果文字出现
                 texts = itt.ocr_multiple_lines(AreaMaterialGetText)
