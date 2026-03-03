@@ -1,0 +1,10 @@
+{
+    "windows": {
+        "window_title": "无限暖暖",
+        "process_name": "X6Game-Win64-Shipping.exe"
+    },
+    "macos": {
+        "bundle_id": "",
+        "window_title": ""
+    }
+}

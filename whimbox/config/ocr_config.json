@@ -1,0 +1,12 @@
+{
+    "engine": "win-ocr",
+    "win-ocr": {
+        "lang": "zh-CN"
+    },
+    "paddle": {
+        "lang": "ch"
+    },
+    "tesseract": {
+        "lang": "chi_sim+eng"
+    }
+}
