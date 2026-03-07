@@ -1,0 +1,19 @@
+[
+  { "name": "walk", "type": "move" },
+  { "name": "jump", "type": "move" },
+  { "name": "pick_up", "type": "action" },
+  { "name": "flourish", "type": "action" },
+  { "name": "shapeshifting", "type": "action" },
+  { "name": "catch_insect", "type": "action" },
+  { "name": "clean_animal", "type": "action" },
+  { "name": "fishing", "type": "action" },
+  { "name": "key_click", "type": "action" },
+  { "name": "minigame", "type": "action" },
+  { "name": "group_chat", "type": "action" },
+  { "name": "place_item", "type": "action" },
+  { "name": "change_music", "type": "action" },
+  { "name": "pickup_bottle", "type": "action" },
+  { "name": "delivery_bottle", "type": "action" },
+  { "name": "take_photo", "type": "action" },
+  { "name": "trans_animal", "type": "action" }
+]

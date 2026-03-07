@@ -10,11 +10,7 @@ def is_rgba_image(image: np.ndarray):
     Returns:
         bool: 如果是 H, W, 4 形状的数组则返回 True，否则返回 False。
     """
-    # 检查维度数是否为 3
-    if image.ndim != 3 and image.shape[2] != 4:
-        return False
-
-    return True
+    return image.ndim == 3 and image.shape[2] == 4
 
 def convert_bbox_to_absolute(rel_coords, img_width, img_height):
     """

@@ -1,5 +1,3 @@
-'''键盘状态记录器，暂不使用'''
-
 from pynput import keyboard
 import time
 from typing import Dict
