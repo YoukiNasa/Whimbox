@@ -5,15 +5,49 @@ from enum import Enum
 
 class KeyCode(Enum):
     """虚拟键码，平台无关"""
-    W = "w"
     A = "a"
-    S = "s"
+    B = "b"
+    C = "c"
     D = "d"
-    SPACE = "space"
+    E = "e"
+    F = "f"
+    G = "g"
+    H = "h"
+    I = "i"
+    J = "j"
+    K = "k"
+    L = "l"
+    M = "m"
+    N = "n"
+    O = "o"
+    P = "p"
+    Q = "q"
+    R = "r"
+    S = "s"
+    T = "t"
+    U = "u"
+    V = "v"
+    W = "w"
+    X = "x"
+    Y = "y"
+    Z = "z"
+    ESCAPE = "escape"
+    TAB = "tab"
     SHIFT = "shift"
     CTRL = "ctrl"
-    F = "f"
-    # ... 其他通用按键
+    ALT = "alt"
+    SPACE = "space"
+    BACKSPACE = "backspace"
+    ENTER = "enter"
+    F1 = "f1"
+    F2 = "f2"
+    F3 = "f3"
+    F4 = "f4"
+    F5 = "f5"
+    F6 = "f6"
+    F7 = "f7"
+    F8 = "f8"
+    F9 = "f9"
 
 class MouseButton(Enum):
     LEFT = "left"
@@ -22,22 +56,16 @@ class MouseButton(Enum):
 
 @dataclass
 class InputConfig:
-    """输入配置，平台无关"""
-    move_duration_base_ms: float = 100.0
-    random_jitter: float = 0.2
+    """输入配置，平台特定"""
     use_hardware_events: bool = True  # 硬件级还是软件级
     require_admin: bool = False       # 是否需要管理员权限
 
-class InputControllerBase(ABC):
+class InputServiceBase(ABC):
     """
-    输入控制器抽象基类
-    
-    所有平台实现必须遵循此接口
-    业务逻辑只依赖此接口，不感知具体平台
+    输入服务抽象基类
     """
     
-    def __init__(self, config: InputConfig):
-        self.config = config
+    def __init__(self):
         self._initialized = False
     
     @abstractmethod
@@ -51,7 +79,7 @@ class InputControllerBase(ABC):
         pass
     
     @abstractmethod
-    def press_key(self, key: KeyCode, duration_ms: Optional[float] = None):
+    def press_key(self, key: KeyCode, duration_ms: Optional[float] = None, randomize: bool = True):
         """按下并释放按键"""
         pass
     
@@ -82,7 +110,7 @@ class InputControllerBase(ABC):
     
     @abstractmethod
     def click(self, button: MouseButton = MouseButton.LEFT, 
-              duration_ms: float = 50):
+              duration_ms: float = 50, randomize: bool = True):
         """点击"""
         pass
     
