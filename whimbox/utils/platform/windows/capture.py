@@ -1,14 +1,15 @@
 import numpy as np
-from base import CaptureService
+
 from ctypes.wintypes import HWND
 from winrt.windows.media.capture import MediaCapture
 from winrt.windows.graphics.directx import DirectXPixelFormat
 from winrt.windows.ai.machinelearning import LearningModelDevice, LearningModelDeviceKind
 from winrt.windows.graphics.capture import Direct3D11CaptureFramePool, Direct3D11CaptureFrame
 from winrt.windows.graphics.capture.interop import create_for_window
+from whimbox.utils.platform.base import CaptureServiceBase
 from whimbox.utils.platform.windows.misc import find_window_by_title, find_window_by_process, wait_for
 
-class WindowsCaptureService(CaptureService):
+class CaptureService(CaptureServiceBase):
     def __init__(self, game_config: dict):
         self._hwnd = self._find_window(
                 game_config.get("window_title"),

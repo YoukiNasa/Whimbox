@@ -5,7 +5,7 @@ import win32api
 import win32con
 from whimbox.utils.platform.base.input import InputServiceBase, InputConfig, KeyCode, MouseButton
 
-class WindowsInputService(InputServiceBase):
+class InputService(InputServiceBase):
     """
     Windows平台输入服务实现
     """

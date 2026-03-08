@@ -3,9 +3,9 @@ import threading
 from pathlib import Path
 from typing import Optional
 from win10toast import ToastNotifier
-from whimbox.common.logger import logger
+from whimbox.utils.logger import logger
 
-class Notifier:
+class NotifyService:
     def __init__(self):
         self._toaster: Optional[ToastNotifier] = None
         self._enabled = False
@@ -31,5 +31,3 @@ class Notifier:
                 logger.error(f"发送通知失败: {e}")
 
         threading.Thread(target=_show, daemon=True).start()
-
-notify = Notifier()
