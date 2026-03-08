@@ -1,5 +1,4 @@
 import time
-import random
 from typing import Tuple, Optional, List
 import win32api
 import win32con
@@ -49,7 +48,7 @@ class InputService(InputServiceBase):
     
     def __init__(self, config: InputConfig):
         super().__init__(config)
-        self._held_keys = set()  # 跟踪当前按下的键
+        self._pressed_keys = set()  # 跟踪当前按下的键
         
     def initialize(self) -> bool:
         """初始化Windows输入服务"""
@@ -79,18 +78,10 @@ class InputService(InputServiceBase):
             raise ValueError(f"不支持的键码: {key}")
         return self.VK_CODE_MAP[key]
     
-    def _get_duration(self, base_duration: float, random_jitter: Optional[float]) -> float:
-        """计算实际持续时间（带抖动）"""
-        if random_jitter is None:
-            return base_duration / 1000.0
-        
-        jitter = random.uniform(-random_jitter, random_jitter)
-        return base_duration * (1 + jitter)
-    
-    def hold_key(self, key: KeyCode):
-        """按住不放"""
+    def press_key(self, key: KeyCode):
+        """按下按键"""
         vk_code = self._get_vk_code(key)
-        
+
         # 获取扫描码，特殊处理Shift键
         if key == KeyCode.SHIFT:
             scan_code = win32api.MapVirtualKey(win32con.VK_SHIFT, 0)
@@ -98,8 +89,8 @@ class InputService(InputServiceBase):
             scan_code = 0
             
         win32api.keybd_event(vk_code, scan_code, 0, 0)
-        self._held_keys.add(key)
-    
+        self._pressed_keys.add(key)
+
     def release_key(self, key: KeyCode):
         """释放按键"""
         vk_code = self._get_vk_code(key)
@@ -110,28 +101,7 @@ class InputService(InputServiceBase):
             scan_code = 0
             
         win32api.keybd_event(vk_code, scan_code, win32con.KEYEVENTF_KEYUP, 0)
-        self._held_keys.discard(key)
-    
-    def press_key(self, key: KeyCode, duration_ms: float = 25, random_jitter: float = 0.2):
-        """按下并释放按键"""
-        self.hold_key(key)
-        time.sleep(self._get_duration(duration_ms, random_jitter))
-        self.release_key(key)
-
-    def press_combo(self, keys: List[KeyCode], duration_ms: float = 25, random_jitter: float = 0.2):
-        """组合键（如Ctrl+C）"""
-        if not keys:
-            return
-        
-        # 依次按下所有键
-        for key in keys:
-            self.hold_key(key)
-            time.sleep(self._get_duration(duration_ms, random_jitter))
-        
-        # 依次释放所有键（反向顺序）
-        for key in reversed(keys):
-            self.release_key(key)
-            time.sleep(self._get_duration(25, random_jitter))
+        self._pressed_keys.discard(key)
     
     def get_mouse_pos(self) -> Tuple[int, int]:
         """获取当前鼠标位置（屏幕坐标）"""
@@ -149,18 +119,17 @@ class InputService(InputServiceBase):
         else:
             win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(x), int(y), 0, 0)
 
-    def click_mouse(self, button: MouseButton = MouseButton.LEFT, 
-              duration_ms: float = 50, random_jitter: float = 0.2):
-        """点击鼠标"""
-        down_flag, up_flag = self.MOUSE_BUTTON_MAP[button]
-    
-        # 按下
+    def press_mouse(self, button: MouseButton = MouseButton.LEFT):
+        """按下鼠标按钮"""
+        down_flag, _ = self.MOUSE_BUTTON_MAP[button]
         win32api.mouse_event(down_flag, 0, 0, 0, 0)
-        time.sleep(self._get_duration(duration_ms, random_jitter))
-        # 释放
+
+    def release_mouse(self, button: MouseButton = MouseButton.LEFT):
+        """释放鼠标按钮"""
+        _, up_flag = self.MOUSE_BUTTON_MAP[button]
         win32api.mouse_event(up_flag, 0, 0, 0, 0)
-    
-    def scroll(self, delta: int):
+
+    def scroll_mouse(self, delta: int):
         """滚轮滚动，delta为正向上，为负向下"""
         # delta通常以WHEEL_DELTA(120)为单位
         win32api.mouse_event(
@@ -170,13 +139,41 @@ class InputService(InputServiceBase):
             0
         )
     
-    # ========== 额外实用方法（非基类要求，但保留参考代码功能） ==========
+    # ========== 额外实用方法 ==========
+
+    def click_key(self, button: KeyCode, duration_ms: int = 50, random_jitter: float = 0.2):
+        """点击键盘按钮"""
+        self.press_key(button)
+        time.sleep(self._get_duration(duration_ms, random_jitter))
+        self.release_key(button)
+
+    def click_key_combo(self, keys: List[KeyCode], duration_ms: int = 25, random_jitter: float = 0.2):
+        """组合键（如Ctrl+C）"""
+        if not keys:
+            return
+        
+        # 依次按下所有键
+        for key in keys:
+            self.hold_key(key)
+            time.sleep(self._get_duration(duration_ms, random_jitter))
+        
+        # 依次释放所有键（反向顺序）
+        for key in reversed(keys):
+            self.release_key(key)
+            time.sleep(self._get_duration(duration_ms, random_jitter))
     
-    def double_click(self, button: MouseButton = MouseButton.LEFT, interval: float = 0.05):
+    def click_mouse(self, button: MouseButton = MouseButton.LEFT, 
+              duration_ms: int = 50, random_jitter: float = 0.2):
+        """点击鼠标"""
+        self.press_mouse(button)
+        time.sleep(self._get_duration(duration_ms, random_jitter))
+        self.release_mouse(button)
+
+    def click_mouse_double(self, button: MouseButton = MouseButton.LEFT, duration_ms: int = 50, random_jitter: float = 0.2, interval_ms: int = 200, interval_jitter: float = 0.1):
         """双击"""
-        self.click_mouse(button)
-        time.sleep(interval)
-        self.click_mouse(button)
+        self.click_mouse(button, duration_ms, random_jitter)
+        time.sleep(self._get_duration(interval_ms, interval_jitter))
+        self.click_mouse(button, duration_ms, random_jitter)
     
     def move_mouse_smooth(self, target_x: int, target_y: int, duration: float = 0.2):
         """
@@ -204,7 +201,7 @@ class InputService(InputServiceBase):
             self.move_mouse(x, y, absolute=True)
             time.sleep(delay)
     
-    def click_at(self, x: int, y: int, button: MouseButton = MouseButton.LEFT):
+    def click_mouse_at(self, button: MouseButton = MouseButton.LEFT, x: int = 0, y: int = 0, duration_ms: int = 50, random_jitter: float = 0.2):
         """移动到指定位置并点击"""
         self.move_mouse(x, y, absolute=True)
-        self.click_mouse(button)
+        self.click_mouse(button, duration_ms, random_jitter)

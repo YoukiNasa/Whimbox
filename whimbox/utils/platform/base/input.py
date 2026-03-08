@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Tuple, Optional, List
 from dataclasses import dataclass
 from enum import Enum
+from random import random
 
 class KeyCode(Enum):
     """虚拟键码，平台无关"""
@@ -59,6 +60,7 @@ class InputConfig:
     """输入配置，平台特定"""
     use_hardware_events: bool = True  # 硬件级还是软件级
     require_admin: bool = False       # 是否需要管理员权限
+    wheel_scroll_amount: int = 120     # 滚轮增量，通常为120
 
 class InputServiceBase(ABC):
     """
@@ -77,15 +79,18 @@ class InputServiceBase(ABC):
     def cleanup(self):
         """清理资源"""
         pass
+
+    def _get_duration(self, base_duration: float, random_jitter: Optional[float]) -> float:
+        """计算实际持续时间（带抖动）"""
+        if random_jitter is None:
+            return base_duration / 1000.0
+        
+        jitter = random.uniform(-random_jitter, random_jitter)
+        return base_duration * (1 + jitter)
     
     @abstractmethod
-    def press_key(self, key: KeyCode, duration_ms: Optional[float] = None, randomize: bool = True):
-        """按下并释放按键"""
-        pass
-    
-    @abstractmethod
-    def hold_key(self, key: KeyCode):
-        """按住不放"""
+    def press_key(self, key: KeyCode):
+        """按下按键"""
         pass
     
     @abstractmethod
@@ -94,34 +99,27 @@ class InputServiceBase(ABC):
         pass
     
     @abstractmethod
-    def press_combo(self, keys: List[KeyCode], duration_ms: Optional[float] = None):
-        """组合键"""
+    def get_mouse_pos(self) -> Tuple[int, int]:
+        """获取鼠标位置"""
         pass
-    
+
     @abstractmethod
     def move_mouse(self, x: int, y: int, absolute: bool = True):
         """移动鼠标"""
         pass
     
     @abstractmethod
-    def move_mouse_relative(self, dx: int, dy: int):
-        """相对移动"""
+    def press_mouse(self, button: MouseButton = MouseButton.LEFT):
+        """按下鼠标按钮"""
         pass
     
-    @abstractmethod
-    def click(self, button: MouseButton = MouseButton.LEFT, 
-              duration_ms: float = 50, randomize: bool = True):
-        """点击"""
+    def release_mouse(self, button: MouseButton = MouseButton.LEFT):
+        """释放鼠标按钮"""
         pass
-    
+
     @abstractmethod
-    def scroll(self, delta: int):
+    def scroll_mouse(self, delta: int):
         """滚轮"""
-        pass
-    
-    @abstractmethod
-    def get_mouse_pos(self) -> Tuple[int, int]:
-        """获取鼠标位置"""
         pass
     
     def __enter__(self):
