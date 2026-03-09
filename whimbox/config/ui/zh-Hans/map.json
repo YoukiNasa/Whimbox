@@ -1,0 +1,70 @@
+[
+  {
+    "id": "sea_of_stars",
+    "text": "星之海"
+  },
+  {
+    "id": "wishfield",
+    "text": "心愿原野",
+    "sub": [
+      {
+        "id": "memorial_mountains",
+        "text": "纪念山地"
+      },
+      {
+        "id": "florawish",
+        "text": "花愿镇"
+      },
+      {
+        "id": "breezy_meadow",
+        "text": "微风绿野"
+      },
+      {
+        "id": "stoneville",
+        "text": "小石树田村"
+      },
+      {
+        "id": "abandoned_district",
+        "text": "石树田无人区"
+      },
+      {
+        "id": "wishing_woods",
+        "text": "祈愿树林"
+      },
+      {
+        "id": "firework_isles",
+        "text": "花焰群岛"
+      },
+      {
+        "id": "serenity_island",
+        "text": "无忧岛"
+      },
+      {
+        "id": "danqing_island",
+        "text": "丹青屿"
+      },
+      {
+        "id": "danqing_realm",
+        "text": "Danqing Realm"
+      }
+    ]
+  },
+  {
+    "id": "itzaland",
+    "text": "伊赞之土",
+    "sub": [
+      {
+        "id": "elderwood_forest",
+        "text": "巨木之森"
+      },
+      {
+        "id": "spira",
+        "text": "蜗牛城"
+      },
+      {
+        "id": "wanxiang_realm",
+        "text": "万相境"
+      }
+    ]
+  }
+]

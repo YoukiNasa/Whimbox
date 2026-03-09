@@ -1,0 +1,70 @@
+[
+  {
+    "id": "sea_of_stars",
+    "text": "Sea of Stars"
+  },
+  {
+    "id": "wishfield",
+    "text": "Wishfield",
+    "sub": [
+      {
+        "id": "memorial_mountains",
+        "text": "Memorial Mountains"
+      },
+      {
+        "id": "florawish",
+        "text": "Florawish"
+      },
+      {
+        "id": "breezy_meadow",
+        "text": "Breezy Meadow"
+      },
+      {
+        "id": "stoneville",
+        "text": "Stoneville"
+      },
+      {
+        "id": "abandoned_district",
+        "text": "Abandoned District"
+      },
+      {
+        "id": "wishing_woods",
+        "text": "Wishing Woods"
+      },
+      {
+        "id": "firework_isles",
+        "text": "Firework Isles"
+      },
+      {
+        "id": "serenity_island",
+        "text": "Serenity Island"
+      },
+      {
+        "id": "danqing_island",
+        "text": "Danqing Island"
+      },
+      {
+        "id": "danqing_realm",
+        "text": "Danqing Realm"
+      }
+    ]
+  },
+  {
+    "id": "itzaland",
+    "text": "Itzaland",
+    "sub": [
+      {
+        "id": "elderwood_forest",
+        "text": "Elderwood Forest"
+      },
+      {
+        "id": "spira",
+        "text": "Spira"
+      },
+      {
+        "id": "wanxiang_realm",
+        "text": "Wanxiang Realm"
+      }
+    ]
+  }
+]
