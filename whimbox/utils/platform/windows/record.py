@@ -13,6 +13,28 @@ class RecordService:
         self.lock = threading.Lock()
         self.thread = None
         
+    def start(self):
+        """启动录制"""
+        if self.recording:
+            return
+        
+        self.recording = True
+        self.thread = threading.Thread(target=self._run_listeners, daemon=True)
+        self.thread.start()
+    
+    def stop(self):
+        """停止录制"""
+        if not self.recording:
+            return
+        
+        self.recording = False
+        
+        # 停止监听器
+        if self.mouse_listener:
+            self.mouse_listener.stop()
+        if self.keyboard_listener:
+            self.keyboard_listener.stop()
+    
     def _on_mouse_move(self, x, y):
         """鼠标移动事件"""
         with self.lock:
@@ -109,34 +131,10 @@ class RecordService:
         self.mouse_listener.join()
         self.keyboard_listener.join()
     
-    def start(self):
-        """启动录制（在新线程中）"""
-        if self.recording:
-            print("已经在录制中...")
-            return
-        
-        self.recording = True
-        self.thread = threading.Thread(target=self._run_listeners, daemon=True)
-        self.thread.start()
-        print("=" * 50)
-        print("开始录制鼠标和键盘操作...")
-        print("按 Esc 键停止录制")
-        print("=" * 50)
-    
-    def stop(self):
-        """停止录制"""
-        if not self.recording:
-            return
-        
-        self.recording = False
-        
-        # 停止监听器
-        if self.mouse_listener:
-            self.mouse_listener.stop()
-        if self.keyboard_listener:
-            self.keyboard_listener.stop()
-        
-        print("录制已停止")
+    def get_events(self):
+        """获取录制的事件列表"""
+        with self.lock:
+            return list(self.events)
     
     def save_to_json(self, filename="input_record.json"):
         """保存记录到 JSON 文件"""
